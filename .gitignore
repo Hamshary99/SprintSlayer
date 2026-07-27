@@ -43,3 +43,6 @@ frontend/.env.*
 # Vite frontend output
 frontend/dist/
 frontend/build/
+
+# plans
+plans/*
