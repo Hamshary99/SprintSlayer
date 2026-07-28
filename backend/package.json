@@ -12,6 +12,7 @@
     "start": "node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:rollback": "drizzle-kit undo",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:check": "node -e \"import { checkDbConnection } from './dist/config/db.config.js'\""
