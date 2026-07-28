@@ -550,7 +550,7 @@ describe("ProjectService.deleteProject()", () => {
     mockUserRepo.findById.mockResolvedValue([ADMIN_USER]);
     mockProjectRepo.deleteProject.mockResolvedValue([FAKE_PROJECT]);
 
-    const input = { id: 10, ownerId: 1 };
+    const input = 10;
     const result = await service.deleteProject(input, 1);
 
     logIO("deleteProject — happy path", input, result);
@@ -562,7 +562,7 @@ describe("ProjectService.deleteProject()", () => {
   it("21 — should return empty array when project does not exist (early return)", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([]);
 
-    const input = { id: 9999, ownerId: 1 };
+    const input = 9999;
     const result = await service.deleteProject(input, 1);
 
     logIO("deleteProject — project not found (early return)", input, result);
@@ -575,7 +575,7 @@ describe("ProjectService.deleteProject()", () => {
     mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
     mockUserRepo.findById.mockResolvedValue([MEMBER_USER]);
 
-    const input = { id: 10, ownerId: 2 };
+    const input = 10;
     let error: unknown;
     try {
       await service.deleteProject(input, 2);
@@ -596,7 +596,7 @@ describe("ProjectService.deleteProject()", () => {
     mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]); // ownerId=1
     mockUserRepo.findById.mockResolvedValue([OTHER_ADMIN]); // id=3
 
-    const input = { id: 10, ownerId: 3 };
+    const input = 10;
     let error: unknown;
     try {
       await service.deleteProject(input, 3);
@@ -617,7 +617,7 @@ describe("ProjectService.deleteProject()", () => {
   it("24 — should return empty array when deleting with id=999999", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([]);
 
-    const input = { id: 999999, ownerId: 1 };
+    const input = 999999;
     const result = await service.deleteProject(input, 1);
 
     logIO("deleteProject — very large non-existent id", input, result);

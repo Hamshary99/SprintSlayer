@@ -74,13 +74,13 @@ describe("Project Routes Integration Tests", () => {
             expect(mockProjectService.createProject).toHaveBeenCalled();
         });
 
-        it("POST /api/projects/add-member - should call addMemberToProject", async () => {
+        it("POST /api/projects/:projectId/members - should call addMemberToProject", async () => {
             mockProjectService.addMemberToProject.mockResolvedValue([{ id: 1 }]);
 
             const res = await request(app)
-                .post("/api/projects/add-member")
+                .post("/api/projects/1/members")
                 .set("Cookie", [`access_token=${userToken}`])
-                .send({ projectId: 1, userId: 2 });
+                .send({ userId: 2 });
             
             expect(res.status).toBe(200);
             expect(mockProjectService.addMemberToProject).toHaveBeenCalledWith(
@@ -89,11 +89,11 @@ describe("Project Routes Integration Tests", () => {
             );
         });
 
-        it("PUT /api/projects/:id - should call updateProject", async () => {
+        it("PATCH /api/projects/:id - should call updateProject", async () => {
             mockProjectService.updateProject.mockResolvedValue([FAKE_PROJECT]);
 
             const res = await request(app)
-                .put("/api/projects/1")
+                .patch("/api/projects/1")
                 .set("Cookie", [`access_token=${userToken}`])
                 .send({ id: 1, title: "Updated" });
             
@@ -113,13 +113,13 @@ describe("Project Routes Integration Tests", () => {
             expect(mockProjectService.deleteProject).toHaveBeenCalledWith(1, 100);
         });
 
-        it("DELETE /api/projects/remove-member - should call deleteMemberFromProject", async () => {
+        it("DELETE /api/projects/:projectId/members - should call deleteMemberFromProject", async () => {
             mockProjectService.deleteMemberFromProject.mockResolvedValue([{ id: 1 }]);
 
             const res = await request(app)
-                .delete("/api/projects/remove-member")
+                .delete("/api/projects/1/members")
                 .set("Cookie", [`access_token=${userToken}`])
-                .send({ projectId: 1, userId: 2 });
+                .send({ userId: 2 });
             
             expect(res.status).toBe(200);
             expect(mockProjectService.deleteMemberFromProject).toHaveBeenCalledWith({ projectId: 1, userId: 2 }, 100);

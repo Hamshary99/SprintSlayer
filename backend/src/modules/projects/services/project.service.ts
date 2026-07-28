@@ -4,7 +4,6 @@ import type {
   UpdateProjectDto,
   RemoveProjectMemberDto,
   AddProjectMemberDto,
-  DeleteProjectDto,
 } from "../dto/project.dto.js";
 import { AppError } from "../../../common/error/AppError.js";
 import { UserRepository } from "../../users/repositories/user.repository.js";
@@ -108,16 +107,16 @@ export class ProjectService {
     return this.projectRepository.updateProject(projectId, project);
   }
 
-  async deleteProject(project: DeleteProjectDto, requesterId: number) {
+  async deleteProject(projectId: number, requesterId: number) {
     // 1. Check if project exists
-    const existingProject = await this.projectRepository.getProjectById(project.id);
+    const existingProject = await this.projectRepository.getProjectById(projectId);
     if (existingProject.length === 0) {
       return [];
     }
 
     // Only the admin owner can delete the project
-    await this.checkAdminAndOwnership(requesterId, project.id);
-    return this.projectRepository.deleteProject(project.id);
+    await this.checkAdminAndOwnership(requesterId, projectId);
+    return this.projectRepository.deleteProject(projectId);
   }
 
   async deleteMemberFromProject(

@@ -413,8 +413,8 @@ Tokens are set as HttpOnly cookies automatically — no token field in the body.
 | `POST` | `/project` | admin | Creates project. Owner auto-added as member. |
 | `PUT` | `/project/:id` | admin owner | Updates title/description |
 | `DELETE` | `/project/:id` | admin owner | Hard deletes project (cascade) |
-| `POST` | `/project/add-member` | admin owner | Adds a user to project_members |
-| `DELETE` | `/project/remove-member` | admin owner | Removes a user from project_members |
+| `POST` | `/project/:projectId/members` | admin owner | Adds a user to project_members |
+| `DELETE` | `/project/:projectId/members` | admin owner | Removes a user from project_members |
 | `GET` | `/project/my-projects` | any | Admin: all projects. Member: their projects. Paginated. |
 | `GET` | `/project/:id` | member | Returns project if requester is a member |
 | `GET` | `/project/members/:projectId` | member | Lists project members. Paginated. |
@@ -428,10 +428,9 @@ Tokens are set as HttpOnly cookies automatically — no token field in the body.
 ```
 > `ownerId` is injected server-side from `req.user.id` — do not send from client.
 
-**POST /project/add-member body:**
+**POST /project/:projectId/members body:**
 ```json
 {
-  "projectId": 1,
   "userId": 5
 }
 ```

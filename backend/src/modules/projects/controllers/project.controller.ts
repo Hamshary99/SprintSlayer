@@ -19,8 +19,9 @@ class ProjectController {
 
   addMemberToProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const payload = { ...req.body, projectId: Number(req.params.projectId) };
       const projectMember = await this.projectService.addMemberToProject(
-        req.body,
+        payload,
         req.user!.id,
       );
       res.json(projectMember);
@@ -32,7 +33,7 @@ class ProjectController {
   updateProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const project = await this.projectService.updateProject(
-        req.body.id,
+        Number(req.params.id),
         req.body,
         req.user!.id,
       );
@@ -45,7 +46,7 @@ class ProjectController {
   deleteProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const project = await this.projectService.deleteProject(
-        req.body.id,
+        Number(req.params.id),
         req.user!.id,
       );
       res.json(project);
@@ -60,8 +61,9 @@ class ProjectController {
     next: NextFunction,
   ) => {
     try {
+      const payload = { ...req.body, projectId: Number(req.params.projectId) };
       const projectMember = await this.projectService.deleteMemberFromProject(
-        req.body,
+        payload,
         req.user!.id,
       );
       res.json(projectMember);

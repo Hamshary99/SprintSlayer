@@ -4,10 +4,10 @@ import { requireAuth } from "../../../common/middlewares/requireAuth.js";
 const router = Router();
 
 router.post("/", requireAuth, projectController.createProject);
-router.post("/add-member", requireAuth, projectController.addMemberToProject);
+router.post("/:projectId/members", requireAuth, projectController.addMemberToProject);
 router.patch("/:id", requireAuth, projectController.updateProject);
 router.delete(
-  "/remove-member",
+  "/:projectId/members",
   requireAuth,
   projectController.deleteMemberFromProject,
 );
