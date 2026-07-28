@@ -24,6 +24,7 @@ const mockProjectRepo = {
   getProjectById: jest.fn(),
   getProjectsByOwnerId: jest.fn(),
   getProjectsByMemberId: jest.fn(),
+  getAllProjects: jest.fn(),
   getProjectMemberByProjectId: jest.fn(),
   getProjectMemberByProjectIdAndUserId: jest.fn(),
 };
@@ -788,8 +789,9 @@ describe("ProjectService.getProjectById()", () => {
     expect((error as Error).message).toBe("Project not found");
   });
 
-  it("34 — should throw 403 when requester is not a member of the project", async () => {
+  it("34 — should throw 403 when non-admin requester is not a member of the project", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockUserRepo.findById.mockResolvedValue([{ ...MEMBER_USER, id: 999 }]);
     mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([]);
 
     let error: unknown;
@@ -808,46 +810,80 @@ describe("ProjectService.getProjectById()", () => {
     expect((error as any).statusCode).toBe(403);
     expect((error as Error).message).toBe("You are not a member of this project");
   });
+
+  it("34b — should allow admin to view any project even if not a member", async () => {
+    mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockUserRepo.findById.mockResolvedValue([ADMIN_USER]);
+
+    const result = await service.getProjectById(10, 1);
+
+    logIO("getProjectById — admin bypass", { id: 10, requesterId: 1 }, result);
+
+    expect(result).toEqual([FAKE_PROJECT]);
+    // Admin bypasses membership check — getProjectMemberByProjectIdAndUserId should NOT be called
+    expect(mockProjectRepo.getProjectMemberByProjectIdAndUserId).not.toHaveBeenCalled();
+  });
 });
 
 // =====================================================================
-//  7. getProjectsByMemberId() — returns projects the user is a member of
+//  7. getMyProjects() — returns projects scoped to user role
 // =====================================================================
 
-describe("ProjectService.getProjectsByMemberId()", () => {
-  it("35 — should return paginated projects for member (happy path)", async () => {
+describe("ProjectService.getMyProjects()", () => {
+  it("35 — should return only member projects for non-admin user (happy path)", async () => {
     const projects = [FAKE_PROJECT, { ...FAKE_PROJECT, id: 11, title: "Second" }];
+    mockUserRepo.findById.mockResolvedValue([MEMBER_USER]);
     mockProjectRepo.getProjectsByMemberId.mockResolvedValue(projects);
 
-    const result = await service.getProjectsByMemberId(1, 1, 10);
+    const result = await service.getMyProjects(2, 1, 10);
 
-    logIO("getProjectsByMemberId — happy path", { memberId: 1, page: 1, limit: 10 }, result);
+    logIO("getMyProjects — member user", { requesterId: 2, page: 1, limit: 10 }, result);
 
     expect(result).toHaveLength(2);
-    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(1, 1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
+    expect(mockProjectRepo.getAllProjects).not.toHaveBeenCalled();
   });
 
-  it("36 — should return empty array when user has no projects", async () => {
+  it("36 — should return ALL projects for admin user", async () => {
+    const allProjects = [
+      FAKE_PROJECT,
+      { ...FAKE_PROJECT, id: 11, title: "Other Admin's Project", ownerId: 3 },
+      { ...FAKE_PROJECT, id: 12, title: "Third Project", ownerId: 3 },
+    ];
+    mockUserRepo.findById.mockResolvedValue([ADMIN_USER]);
+    mockProjectRepo.getAllProjects.mockResolvedValue(allProjects);
+
+    const result = await service.getMyProjects(1, 1, 10);
+
+    logIO("getMyProjects — admin sees all", { requesterId: 1, page: 1, limit: 10 }, result);
+
+    expect(result).toHaveLength(3);
+    expect(mockProjectRepo.getAllProjects).toHaveBeenCalledWith(1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).not.toHaveBeenCalled();
+  });
+
+  it("37 — should return empty array when member user has no projects", async () => {
+    mockUserRepo.findById.mockResolvedValue([MEMBER_USER]);
     mockProjectRepo.getProjectsByMemberId.mockResolvedValue([]);
 
-    const result = await service.getProjectsByMemberId(9999, 1, 10);
+    const result = await service.getMyProjects(2, 1, 10);
 
-    logIO("getProjectsByMemberId — no projects", { memberId: 9999 }, result);
+    logIO("getMyProjects — no projects", { requesterId: 2 }, result);
 
     expect(result).toEqual([]);
   });
 
-  it("37 — should use default pagination (page=1, limit=10) when no args provided", async () => {
+  it("37b — should use default pagination (page=1, limit=10) when no args provided", async () => {
+    mockUserRepo.findById.mockResolvedValue([MEMBER_USER]);
     mockProjectRepo.getProjectsByMemberId.mockResolvedValue([]);
 
-    await service.getProjectsByMemberId(1);
+    await service.getMyProjects(2);
 
-    logIO("getProjectsByMemberId — default pagination", { memberId: 1 }, "void");
+    logIO("getMyProjects — default pagination", { requesterId: 2 }, "void");
 
-    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(1, 1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
   });
 });
-
 
 
 // =====================================================================
@@ -889,8 +925,9 @@ describe("ProjectService.getMembersOfProject()", () => {
     expect((error as Error).message).toBe("Project not found");
   });
 
-  it("40 — should throw 403 when requester is not a member of the project", async () => {
+  it("40 — should throw 403 when non-admin requester is not a member of the project", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockUserRepo.findById.mockResolvedValue([{ ...MEMBER_USER, id: 999 }]);
     mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([]);
 
     let error: unknown;
@@ -908,6 +945,19 @@ describe("ProjectService.getMembersOfProject()", () => {
     expect(error).toBeInstanceOf(AppError);
     expect((error as any).statusCode).toBe(403);
     expect((error as Error).message).toBe("You are not a member of this project");
+  });
+
+  it("40b — should allow admin to view members of any project", async () => {
+    mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockUserRepo.findById.mockResolvedValue([ADMIN_USER]);
+    mockProjectRepo.getProjectMemberByProjectId.mockResolvedValue([FAKE_MEMBER_DETAIL]);
+
+    const result = await service.getMembersOfProject(10, 1, 1, 10);
+
+    logIO("getMembersOfProject — admin bypass", { projectId: 10, requesterId: 1, page: 1, limit: 10 }, result);
+
+    expect(result).toHaveLength(1);
+    expect(mockProjectRepo.getProjectMemberByProjectIdAndUserId).not.toHaveBeenCalled();
   });
 
   it("41 — should use default pagination when no page/limit provided", async () => {

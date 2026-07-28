@@ -43,6 +43,10 @@ export class ProjectRepository {
         .offset((page - 1) * limit);
     }
 
+    async getAllProjects(page: number, limit: number) {
+        return db.select().from(project).limit(limit).offset((page - 1) * limit);
+    }
+
     async getProjectMemberByProjectId(projectId: number, page: number, limit: number) {
         return db.select({
             userId: users.id,

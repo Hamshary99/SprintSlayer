@@ -37,9 +37,23 @@ export class ProjectService {
   }
 
   /**
+   * Helper to check if a user is an admin.
+   */
+  private async isAdmin(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findById(userId);
+    return user.length > 0 && user[0].role === "admin";
+  }
+
+  /**
    * Helper to verify that a user is a member of (or owner of) a project.
+   * Admins bypass this check.
    */
   private async checkMembership(userId: number, projectId: number) {
+    // Admins can access any project
+    if (await this.isAdmin(userId)) {
+      return;
+    }
+
     const membership = await this.projectRepository.getProjectMemberByProjectIdAndUserId(
       projectId,
       userId,
@@ -150,8 +164,12 @@ export class ProjectService {
     return project;
   }
 
-  async getProjectsByMemberId(memberId: number, page = 1, limit = 10) {
-    return this.projectRepository.getProjectsByMemberId(memberId, page, limit);
+  async getMyProjects(requesterId: number, page = 1, limit = 10) {
+    // Admins see all projects
+    if (await this.isAdmin(requesterId)) {
+      return this.projectRepository.getAllProjects(page, limit);
+    }
+    return this.projectRepository.getProjectsByMemberId(requesterId, page, limit);
   }
 
   async getMembersOfProject(projectId: number, requesterId: number, page = 1, limit = 10) {

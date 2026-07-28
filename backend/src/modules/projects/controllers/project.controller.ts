@@ -91,7 +91,7 @@ class ProjectController {
       const page = Math.max(1, Number(req.query.page) || 1);
       const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
 
-      const projects = await this.projectService.getProjectsByMemberId(
+      const projects = await this.projectService.getMyProjects(
         req.user!.id,
         page,
         limit,
