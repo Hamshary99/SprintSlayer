@@ -106,6 +106,14 @@ export class UserService {
 
         // 2. Update user (passwordHash update is handled by updatePassword method)
         const { passwordHash, refreshToken, ...safeData } = data as UpdateUserDto & { refreshToken?: string };
+
+        if (safeData.email) {
+            const existingEmailUser = await this.userRepository.findByEmail(safeData.email);
+            if (existingEmailUser.length > 0 && existingEmailUser[0].id !== id) {
+                throw new AppError("Email is already in use by another account", 409);
+            }
+        }
+
         const updatedUsers = await this.userRepository.update(id, safeData);
         
         if (updatedUsers.length === 0) {

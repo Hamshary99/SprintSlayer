@@ -51,6 +51,12 @@ export class UserController {
             }
 
             const data = await validateBody(UpdateUserDto, req.body);
+
+            // Only admins can change user roles
+            if (req.user?.role !== 'admin' && data.role) {
+                delete data.role;
+            }
+
             const updated = await this.userService.update(id, data);
 
             res.status(200).json({ user: updated });

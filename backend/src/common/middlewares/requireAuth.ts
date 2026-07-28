@@ -10,6 +10,10 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
             ? authHeader.split(' ')[1] 
             : undefined;
 
+        if (token === 'null' || token === 'undefined' || token === '') {
+            token = undefined;
+        }
+
         // 2. Fallback to cookies if not in header
         if (!token) {
             token = req.cookies?.access_token;

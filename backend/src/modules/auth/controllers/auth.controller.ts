@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from "express";
 import { clearTokensCookies, setAccessTokenCookie, setRefreshTokenCookie } from "../../../common/utils/jwt.util.js";
 import { validateBody } from "../../../common/utils/validator.js";
 import { CreateUserDto, UserLoginDto } from "../../users/dto/user.dto.js";
+import { ForgotPasswordDto, ResetPasswordDto } from "../dto/auth.dto.js";
 import { AppError } from "../../../common/error/AppError.js";
 
 export interface userPayload {
@@ -25,6 +26,9 @@ export class AuthController {
         this.login = this.login.bind(this);
         this.refresh = this.refresh.bind(this);
         this.logout = this.logout.bind(this);
+        this.forgotPassword = this.forgotPassword.bind(this);
+        this.resetPassword = this.resetPassword.bind(this);
+        this.renderResetPasswordForm = this.renderResetPasswordForm.bind(this);
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
@@ -106,6 +110,104 @@ export class AuthController {
         } catch (error) {
             next(error);
         }
+    }
+
+    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await validateBody(ForgotPasswordDto, req.body);
+            const result = await this.authService.forgotPassword(data.email);
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async resetPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await validateBody(ResetPasswordDto, req.body);
+            const result = await this.authService.resetPassword(data.token, data.newPassword);
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    renderResetPasswordForm(req: Request, res: Response) {
+        const token = req.query.token as string || '';
+        res.setHeader('Content-Type', 'text/html');
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>SprintSlayer - Reset Password</title>
+                <style>
+                    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+                    .card { background: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); width: 100%; max-width: 400px; border: 1px solid #334155; }
+                    h2 { margin-top: 0; color: #6366f1; font-size: 1.5rem; text-align: center; }
+                    p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center; }
+                    label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.5rem; font-weight: 500; }
+                    input { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; margin-bottom: 1.25rem; box-sizing: border-box; }
+                    input:focus { outline: none; border-color: #6366f1; }
+                    button { width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #6366f1; color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+                    button:hover { background: #4f46e5; }
+                    .msg { margin-top: 1rem; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem; display: none; text-align: center; }
+                    .success { background: #065f46; color: #a7f3d0; }
+                    .error { background: #991b1b; color: #fecaca; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h2>Reset Your Password</h2>
+                    <p>Enter your new password below.</p>
+                    <form id="resetForm">
+                        <input type="hidden" id="token" value="${token}" />
+                        <div>
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" placeholder="Minimum 6 characters" required minlength="6" />
+                        </div>
+                        <button type="submit" id="submitBtn">Set New Password</button>
+                    </form>
+                    <div id="message" class="msg"></div>
+                </div>
+                <script>
+                    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const token = document.getElementById('token').value;
+                        const newPassword = document.getElementById('newPassword').value;
+                        const msgDiv = document.getElementById('message');
+                        const btn = document.getElementById('submitBtn');
+                        btn.disabled = true;
+                        btn.innerText = 'Updating...';
+
+                        try {
+                            const res = await fetch('/api/auth/reset-password', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ token, newPassword })
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                                msgDiv.className = 'msg success';
+                                msgDiv.innerText = data.message || 'Password successfully updated!';
+                                msgDiv.style.display = 'block';
+                                document.getElementById('resetForm').style.display = 'none';
+                            } else {
+                                throw new Error(data.message || 'Failed to reset password.');
+                            }
+                        } catch (err) {
+                            msgDiv.className = 'msg error';
+                            msgDiv.innerText = err.message;
+                            msgDiv.style.display = 'block';
+                            btn.disabled = false;
+                            btn.innerText = 'Set New Password';
+                        }
+                    });
+                </script>
+            </body>
+            </html>
+        `);
     }
 }
 

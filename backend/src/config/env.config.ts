@@ -25,10 +25,15 @@ export const env = {
     // JWT
     ACCESS_SECRET: required('ACCESS_SECRET'),
     REFRESH_SECRET: required('REFRESH_SECRET'),
-    ACCESS_EXPIRE: (process.env.ACCESS_EXPIRE || '1h') as string,
-    REFRESH_EXPIRE: (process.env.REFRESH_EXPIRE || '7d') as string,
+    ACCESS_EXPIRE: (process.env.ACCESS_EXPIRE || '1h').replace(/['"]/g, '') as string,
+    REFRESH_EXPIRE: (process.env.REFRESH_EXPIRE || '7d').replace(/['"]/g, '') as string,
 
     // Cookie max-ages (in milliseconds)
-    ACCESS_COOKIES_EXPIRE: Number(process.env.ACCESS_COOKIES_EXPIRE) || 3600,
-    REFRESH_COOKIES_EXPIRE: Number(process.env.REFRESH_COOKIES_EXPIRE) || 604800,
+    ACCESS_COOKIES_EXPIRE: Number(process.env.ACCESS_COOKIES_EXPIRE) || 3600000,
+    REFRESH_COOKIES_EXPIRE: Number(process.env.REFRESH_COOKIES_EXPIRE) || 604800000,
+
+    // Email & Frontend Links
+    RESEND_API_KEY: process.env.RESEND_API_KEY || '',
+    EMAIL_FROM: process.env.EMAIL_FROM || 'SprintSlayer <onboarding@resend.dev>',
+    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
 };

@@ -241,7 +241,7 @@ Logout (POST /api/auth/logout)
 ```
 
 **Security decisions:**
-- Tokens are **never** returned in the response body — only in `HttpOnly` cookies. This eliminates XSS-based token theft.
+- Tokens are **never** returned in the response body — only in cookies. `httpOnly` is set to `true` in `prod` / `staging`, but evaluates to `false` in `dev` mode so frontend developers can inspect cookies directly.
 - `secure: true` is only set in `prod` / `staging` environments so local dev doesn't require HTTPS.
 - On logout, the DB token is nulled so the old refresh token can never be replayed.
 - `creatorId` for tasks is **always** injected server-side from `req.user.id` — the client cannot spoof it.
@@ -323,8 +323,9 @@ The global `errorHandler` middleware distinguishes `AppError` (operational — r
 
 ## 4. API Reference
 
-> Base URL: `http://localhost:3000/api`
-> All protected routes require either `Authorization: Bearer <accessToken>` header **or** the `access_token` HttpOnly cookie.
+> Base URL: `http://localhost:5000/api`
+> Interactive Swagger UI: `http://localhost:5000/api-docs`
+> All protected routes require either `Authorization: Bearer <accessToken>` header **or** the `access_token` cookie.
 > All request/response bodies are JSON (`Content-Type: application/json`).
 
 ### 4.1 Auth Endpoints
@@ -335,6 +336,9 @@ The global `errorHandler` middleware distinguishes `AppError` (operational — r
 | `POST` | `/auth/login` | — | `{ email, passwordHash }` | `200 { user }` |
 | `POST` | `/auth/refresh` | — (cookie) | — | `200 { user }` |
 | `POST` | `/auth/logout` | required | — | `200 { message }` |
+| `POST` | `/auth/forgot-password` | — | `{ email }` | `200 { message }` |
+| `POST` | `/auth/reset-password` | — | `{ token, newPassword }` | `200 { message }` |
+| `GET`  | `/auth/reset-password` | — | — (Query: `?token=...`) | `200 HTML Form` (Dev Form) |
 
 **Register body:**
 ```json
@@ -351,6 +355,21 @@ The global `errorHandler` middleware distinguishes `AppError` (operational — r
 {
   "email": "john@example.com",
   "passwordHash": "Password1"
+}
+```
+
+**Forgot password body:**
+```json
+{
+  "email": "john@example.com"
+}
+```
+
+**Reset password body:**
+```json
+{
+  "token": "raw-reset-token-from-email",
+  "newPassword": "newSecretPassword123"
 }
 ```
 
@@ -387,7 +406,7 @@ Tokens are set as HttpOnly cookies automatically — no token field in the body.
 | `GET` | `/user` | required | any | Query: `?page=1&limit=10&role=admin` |
 | `GET` | `/user/:id` | required | any | |
 | `PATCH` | `/user/:id` | required | self or admin | Updates name, email, or role |
-| `DELETE` | `/user/:id` | required | admin only | Soft-delete (sets `active=false`) |
+| `DELETE` | `/user/:id` | required | self or admin | Soft-delete (sets `active=false`) |
 
 **GET /user query params:**
 
@@ -699,8 +718,8 @@ Create a `.env` file in `backend/`:
 
 ```env
 # Server
-PORT=3000
-NODE_ENV=development
+PORT=5000
+NODE_ENV=dev
 
 # Database (required — server won't start without these)
 DB_HOST=localhost
@@ -718,8 +737,13 @@ ACCESS_EXPIRE=1h
 REFRESH_EXPIRE=7d
 
 # Cookie max-age in milliseconds (optional — defaults shown)
-ACCESS_COOKIES_EXPIRE=3600
-REFRESH_COOKIES_EXPIRE=604800
+ACCESS_COOKIES_EXPIRE=3600000
+REFRESH_COOKIES_EXPIRE=604800000
+
+# Email via Resend & Frontend URL (optional in dev — logs to console if empty)
+RESEND_API_KEY=re_123456789
+EMAIL_FROM=SprintSlayer <onboarding@resend.dev>
+FRONTEND_URL=http://localhost:5173
 ```
 
 > The `env.config.ts` module throws at startup if any `required()` variable is missing — the server will not start in a misconfigured environment. This is intentional: fail fast, fail loudly.
