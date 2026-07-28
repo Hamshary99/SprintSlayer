@@ -1,6 +1,7 @@
 import authRoutes from './modules/auth/routes/auth.route.js';
 import userRoutes from './modules/users/routes/user.route.js';
 import projectRoutes from './modules/projects/routes/project.route.js'
+import taskRoutes from './modules/tasks/routes/task.route.js';
 import { Router } from 'express';
 
 export class Routes {
@@ -15,6 +16,9 @@ export class Routes {
 
         // Project routes  — /api/project
         router.use('/project', projectRoutes);
+
+        // Task routes  — /api/task
+        router.use('/task', taskRoutes);
 
         return router;
     }
