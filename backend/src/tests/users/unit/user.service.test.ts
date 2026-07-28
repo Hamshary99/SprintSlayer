@@ -25,25 +25,25 @@ const mockRepo = {
 };
 
 // In ESM, we use unstable_mockModule and exact paths ending with .js
-jest.unstable_mockModule("../../modules/users/repositories/user.repository.js", () => ({
+jest.unstable_mockModule("../../../modules/users/repositories/user.repository.js", () => ({
   UserRepository: jest.fn().mockImplementation(() => mockRepo),
 }));
 
-jest.unstable_mockModule("../../modules/users/utils/password.hash.util.js", () => ({
+jest.unstable_mockModule("../../../modules/users/utils/password.hash.util.js", () => ({
   hashPassword: jest.fn(async (pw: string) => `hashed_${pw}`),
   comparePassword: jest.fn(async (_pw: string, _hash: string) => true),
 }));
 
-jest.unstable_mockModule("../../common/utils/jwt.util.js", () => ({
+jest.unstable_mockModule("../../../common/utils/jwt.util.js", () => ({
   generateAccessToken: jest.fn(() => "access-token-xyz"),
   generateRefreshToken: jest.fn(() => "refresh-token-xyz"),
 }));
 
 /* ── Dynamic Imports (MUST be after unstable_mockModule) ──────────────── */
 
-const { UserService } = await import("../../modules/users/services/user.service.js");
-const { AppError } = await import("../../common/error/AppError.js");
-const { comparePassword } = await import("../../modules/users/utils/password.hash.util.js");
+const { UserService } = await import("../../../modules/users/services/user.service.js");
+const { AppError } = await import("../../../common/error/AppError.js");
+const { comparePassword } = await import("../../../modules/users/utils/password.hash.util.js");
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
 
@@ -158,7 +158,7 @@ describe("UserService.create()", () => {
 
     logIO("create — minimal fields", minimalInput, result);
 
-    const { hashPassword } = await import("../../modules/users/utils/password.hash.util.js");
+    const { hashPassword } = await import("../../../modules/users/utils/password.hash.util.js");
     expect(hashPassword).toHaveBeenCalledWith("Ab1cdefg");
     expectNoSensitiveFields(result.userData as Record<string, unknown>);
   });

@@ -34,14 +34,14 @@ const mockUserRepo = {
 };
 
 jest.unstable_mockModule(
-  "../../modules/projects/repositories/project.repository.js",
+  "../../../modules/projects/repositories/project.repository.js",
   () => ({
     ProjectRepository: jest.fn().mockImplementation(() => mockProjectRepo),
   })
 );
 
 jest.unstable_mockModule(
-  "../../modules/users/repositories/user.repository.js",
+  "../../../modules/users/repositories/user.repository.js",
   () => ({
     UserRepository: jest.fn().mockImplementation(() => mockUserRepo),
   })
@@ -50,9 +50,9 @@ jest.unstable_mockModule(
 /* ── Dynamic Imports (MUST be after unstable_mockModule) ──────────────── */
 
 const { ProjectService } = await import(
-  "../../modules/projects/services/project.service.js"
+  "../../../modules/projects/services/project.service.js"
 );
-const { AppError } = await import("../../common/error/AppError.js");
+const { AppError } = await import("../../../common/error/AppError.js");
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
 

@@ -6,12 +6,12 @@ const router = Router();
 router.post("/", requireAuth, projectController.createProject);
 router.post("/add-member", requireAuth, projectController.addMemberToProject);
 router.put("/:id", requireAuth, projectController.updateProject);
-router.delete("/:id", requireAuth, projectController.deleteProject);
 router.delete(
   "/remove-member",
   requireAuth,
   projectController.deleteMemberFromProject,
 );
+router.delete("/:id", requireAuth, projectController.deleteProject);
 router.get("/my-projects", requireAuth, projectController.getMyProjects);
 router.get("/:id", requireAuth, projectController.getProjectById);
 router.get("/members/:projectId", requireAuth, projectController.getMembersOfProject);

@@ -30,22 +30,22 @@ const mockJwtUtils = {
   clearTokensCookies: jest.fn(),
 };
 
-jest.unstable_mockModule("../../modules/users/services/user.service.js", () => ({
+jest.unstable_mockModule("../../../modules/users/services/user.service.js", () => ({
   userService: mockUserService,
   UserService: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../modules/auth/services/auth.service.js", () => ({
+jest.unstable_mockModule("../../../modules/auth/services/auth.service.js", () => ({
   authService: mockAuthService,
   AuthService: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../common/utils/jwt.util.js", () => mockJwtUtils);
+jest.unstable_mockModule("../../../common/utils/jwt.util.js", () => mockJwtUtils);
 
 /* ── Dynamic Imports (MUST be after unstable_mockModule) ──────────────── */
 
-const { AuthController } = await import("../../modules/auth/controllers/auth.controller.js");
-const { AppError } = await import("../../common/error/AppError.js");
+const { AuthController } = await import("../../../modules/auth/controllers/auth.controller.js");
+const { AppError } = await import("../../../common/error/AppError.js");
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
 

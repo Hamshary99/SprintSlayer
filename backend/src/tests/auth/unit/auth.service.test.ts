@@ -19,11 +19,11 @@ const mockRepo = {
   update: jest.fn(),
 };
 
-jest.unstable_mockModule("../../modules/users/repositories/user.repository.js", () => ({
+jest.unstable_mockModule("../../../modules/users/repositories/user.repository.js", () => ({
   UserRepository: jest.fn().mockImplementation(() => mockRepo),
 }));
 
-jest.unstable_mockModule("../../common/utils/jwt.util.js", () => ({
+jest.unstable_mockModule("../../../common/utils/jwt.util.js", () => ({
   generateAccessToken: jest.fn(() => "new-access-token"),
   generateRefreshToken: jest.fn(() => "new-refresh-token"),
   verifyRefreshToken: jest.fn((token) => {
@@ -38,8 +38,8 @@ jest.unstable_mockModule("../../common/utils/jwt.util.js", () => ({
 
 /* ── Dynamic Imports (MUST be after unstable_mockModule) ──────────────── */
 
-const { AuthService } = await import("../../modules/auth/services/auth.service.js");
-const { AppError } = await import("../../common/error/AppError.js");
+const { AuthService } = await import("../../../modules/auth/services/auth.service.js");
+const { AppError } = await import("../../../common/error/AppError.js");
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
 
@@ -147,7 +147,7 @@ describe("AuthService.refreshAccessToken()", () => {
     await service.refreshAccessToken(input);
 
     // Get the JWT module mocked functions
-    const jwtUtil = await import("../../common/utils/jwt.util.js");
+    const jwtUtil = await import("../../../common/utils/jwt.util.js");
 
     // Check what was passed to generateAccessToken
     const payloadPassed = (jwtUtil.generateAccessToken as jest.Mock).mock.calls[0][0];

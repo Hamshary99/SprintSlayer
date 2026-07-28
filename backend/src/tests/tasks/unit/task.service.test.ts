@@ -26,14 +26,14 @@ const mockProjectRepo = {
 };
 
 jest.unstable_mockModule(
-    "../../modules/tasks/repositories/task.repository.js",
+    "../../../modules/tasks/repositories/task.repository.js",
     () => ({
         TaskRepository: jest.fn().mockImplementation(() => mockTaskRepo),
     })
 );
 
 jest.unstable_mockModule(
-    "../../modules/projects/repositories/project.repository.js",
+    "../../../modules/projects/repositories/project.repository.js",
     () => ({
         ProjectRepository: jest.fn().mockImplementation(() => mockProjectRepo),
     })
@@ -42,9 +42,9 @@ jest.unstable_mockModule(
 /* ── Dynamic Imports (MUST be after unstable_mockModule) ──────────────── */
 
 const { TaskService } = await import(
-    "../../modules/tasks/services/task.service.js"
+    "../../../modules/tasks/services/task.service.js"
 );
-const { AppError } = await import("../../common/error/AppError.js");
+const { AppError } = await import("../../../common/error/AppError.js");
 
 /* ── Fake data ────────────────────────────────────────────────────────── */
 
