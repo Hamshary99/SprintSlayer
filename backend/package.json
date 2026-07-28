@@ -22,7 +22,10 @@
     "db:rollback": "drizzle-kit undo",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:check": "node -e \"import { checkDbConnection } from './dist/config/db.config.js'\""
+    "db:check": "node -e \"import { checkDbConnection } from './dist/config/db.config.js'\"" ,
+    "seed:users": "tsx src/seeds/seed.users.ts",
+    "seed:projects": "tsx src/seeds/seed.projects.ts",
+    "seed:all": "tsx src/seeds/seed.users.ts && tsx src/seeds/seed.projects.ts"
   },
   "keywords": [],
   "author": "",
