@@ -8,8 +8,8 @@ function required(key: string): string {
 
 export const env = {
     // Server
-    PORT: Number(process.env.PORT) || 3000,
-    NODE_ENV: process.env.NODE_ENV || 'development',
+    PORT: Number(process.env.PORT) || 5000,
+    NODE_ENV: process.env.NODE_ENV || 'dev',
 
     // Database
     DB_HOST: required('DB_HOST'),

@@ -74,7 +74,7 @@ paths:
           description: User updated
 
     delete:
-      summary: Soft delete a user (Admin only)
+      summary: Soft delete a user (Admin or Self)
       tags: 
         - Users
       parameters:
@@ -88,4 +88,4 @@ paths:
         '200':
           description: User soft-deleted successfully
         '403':
-          description: Only admins can perform this action
+          description: You are not allowed to delete this user

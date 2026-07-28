@@ -43,7 +43,7 @@ export function verifyRefreshToken(token: string): JwtPayload {
 
 export const setAccessTokenCookie = (res: Response, token: string, options?: SetCookiesOptions) => {
     const defaultOptions: SetCookiesOptions = {
-        httpOnly: true,
+        httpOnly: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
         secure: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
         sameSite: "lax",
         maxAge: env.ACCESS_COOKIES_EXPIRE
@@ -54,7 +54,7 @@ export const setAccessTokenCookie = (res: Response, token: string, options?: Set
 
 export const setRefreshTokenCookie = (res: Response, token: string, options?: SetCookiesOptions) => {
     const defaultOptions: SetCookiesOptions = {
-        httpOnly: true,
+        httpOnly: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
         secure: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
         sameSite: "strict",
         maxAge: env.REFRESH_COOKIES_EXPIRE
