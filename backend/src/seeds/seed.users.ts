@@ -24,7 +24,7 @@ const pool = new Pool({
 const db = drizzle({ client: pool });
 
 // ─── Seed Password (from .env, fallback to 'Password123!') ───────────────────
-const SEED_PASSWORD = process.env.DB_PASSWORD ?? 'Password123!';
+const SEED_PASSWORD = process.env.SEED_PASSWORD ?? 'Password123!';
 
 // ─── Random User Data ─────────────────────────────────────────────────────────
 const firstNames = [
@@ -70,7 +70,7 @@ async function buildUsers(count: number) {
 async function main() {
   console.log('🌱 Seeding users…');
   console.log(`   DB: ${process.env.DB_NAME}@${process.env.DB_HOST}`);
-  console.log(`   Seed password taken from DB_PASSWORD in .env\n`);
+  console.log(`   Seed password taken from SEED_PASSWORD in .env\n`);
 
   const records = await buildUsers(20);
 
