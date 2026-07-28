@@ -1,0 +1,67 @@
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags: 
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, passwordHash, name]
+              properties:
+                email:
+                  type: string
+                passwordHash:
+                  type: string
+                name:
+                  type: string
+                role:
+                  type: string
+      responses:
+        '201':
+          description: User created
+
+  /auth/login:
+    post:
+      summary: Login user
+      tags: 
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, passwordHash]
+              properties:
+                email:
+                  type: string
+                passwordHash:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      tags: 
+        - Auth
+      security: []
+      responses:
+        '200':
+          description: Token refreshed
+
+  /auth/logout:
+    post:
+      summary: Logout user
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: Logout successful

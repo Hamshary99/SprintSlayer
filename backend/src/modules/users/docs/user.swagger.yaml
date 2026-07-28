@@ -1,0 +1,91 @@
+paths:
+  /user:
+    get:
+      summary: Get all users
+      description: Retrieve a paginated list of users.
+      tags: 
+        - Users
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - in: query
+          name: role
+          schema:
+            type: string
+          description: Filter by role
+      responses:
+        '200':
+          description: List of users
+
+  /user/{id}:
+    get:
+      summary: Get user by ID
+      tags: 
+        - Users
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User details
+        '404':
+          description: User not found
+
+    patch:
+      summary: Update user
+      tags: 
+        - Users
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+      responses:
+        '200':
+          description: User updated
+
+    delete:
+      summary: Soft delete a user (Admin only)
+      tags: 
+        - Users
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User soft-deleted successfully
+        '403':
+          description: Only admins can perform this action

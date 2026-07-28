@@ -2,6 +2,8 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { errorHandler } from './common/middlewares/errorHandler.js';
 import { Routes } from './route.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.config.js';
 
 export class AppRoutes {
     static routes(): express.Router {
@@ -18,6 +20,9 @@ export class AppRoutes {
 
         // All other routes (auth, users, etc.)
         router.use('/api', Routes.routes());
+        
+        // Swagger UI
+        router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
         
         // Global error handler (must be last)
         router.use(errorHandler as express.ErrorRequestHandler);

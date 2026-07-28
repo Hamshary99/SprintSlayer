@@ -1,0 +1,169 @@
+paths:
+  /project:
+    post:
+      summary: Create a project
+      tags: 
+        - Projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Project created
+
+  /project/my-projects:
+    get:
+      summary: Get user's projects
+      tags: 
+        - Projects
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of projects
+
+  /project/{id}:
+    get:
+      summary: Get project by ID
+      tags: 
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project details
+
+    patch:
+      summary: Update a project
+      tags: 
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Project updated
+
+    delete:
+      summary: Delete a project
+      tags: 
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project deleted
+
+  /project/{projectId}/members:
+    post:
+      summary: Add member to project
+      tags: 
+        - Projects
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: integer
+      responses:
+        '200':
+          description: Member added
+
+    delete:
+      summary: Remove member from project
+      tags: 
+        - Projects
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: integer
+      responses:
+        '200':
+          description: Member removed
+
+  /project/members/{projectId}:
+    get:
+      summary: Get project members
+      tags: 
+        - Projects
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of project members
