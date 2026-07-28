@@ -1,4 +1,4 @@
-import { ProjectRepository } from "../repositories/project.repository.js";
+import { ProjectRepository, ProjectSortField, SortOrder } from "../repositories/project.repository.js";
 import type {
   CreateProjectDto,
   UpdateProjectDto,
@@ -163,12 +163,27 @@ export class ProjectService {
     return project;
   }
 
-  async getMyProjects(requesterId: number, page = 1, limit = 10) {
+  async getMyProjects(
+    requesterId: number,
+    page = 1,
+    limit = 10,
+    sortBy?: ProjectSortField,
+    sortOrder?: SortOrder,
+    search?: string,
+  ) {
+    const args: any[] = [page, limit];
+    if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
+      args.push(sortBy, sortOrder);
+      if (search !== undefined) {
+        args.push(search);
+      }
+    }
+
     // Admins see all projects
     if (await this.isAdmin(requesterId)) {
-      return this.projectRepository.getAllProjects(page, limit);
+      return (this.projectRepository.getAllProjects as any)(...args);
     }
-    return this.projectRepository.getProjectsByMemberId(requesterId, page, limit);
+    return (this.projectRepository.getProjectsByMemberId as any)(requesterId, ...args);
   }
 
   async getMembersOfProject(projectId: number, requesterId: number, page = 1, limit = 10) {

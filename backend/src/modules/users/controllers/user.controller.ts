@@ -22,7 +22,19 @@ export class UserController {
             const page = parseInt(String(req.query.page), 10) || 1;
             const limit = parseInt(String(req.query.limit), 10) || 10;
             const role = req.query.role as string;
-            const users = await this.userService.findAll(page, limit, role);
+            const sortBy = req.query.sortBy as any;
+            const sortOrder = req.query.sortOrder as any;
+            const search = req.query.search as string;
+
+            const args: any[] = [page, limit, role];
+            if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
+                args.push(sortBy, sortOrder);
+                if (search !== undefined) {
+                    args.push(search);
+                }
+            }
+
+            const users = await (this.userService.findAll as any)(...args);
             res.status(200).json({ users });
         } catch (error) {
             next(error);

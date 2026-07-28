@@ -1,23 +1,58 @@
 import { db } from "../../../db/db.js";
 import { users } from "../schemas/user.schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc, desc, ilike, or } from "drizzle-orm";
 import { CreateUserDto, UpdateUserDto } from "../dto/user.dto.js";
+
+export type UserSortField = "id" | "name" | "email" | "role" | "createdAt";
+export type SortOrder = "asc" | "desc";
+
+const getOrderClause = (
+    sortBy: UserSortField = "createdAt",
+    sortOrder: SortOrder = "desc"
+) => {
+    const column =
+        {
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            role: users.role,
+            createdAt: users.createdAt,
+        }[sortBy] || users.createdAt;
+
+    return sortOrder === "asc" ? asc(column) : desc(column);
+};
 
 export class UserRepository {
     async create(data: CreateUserDto) {
         return db.insert(users).values(data).returning();
     }
 
-    async findAll(page: number = 1, limit: number = 10, role?: string) {
+    async findAll(
+        page: number = 1,
+        limit: number = 10,
+        role?: string,
+        sortBy?: UserSortField,
+        sortOrder?: SortOrder,
+        search?: string,
+    ) {
         const conditions = [eq(users.active, true)];
         
         if (role) {
             conditions.push(eq(users.role, role as any));
         }
+
+        if (search && search.trim()) {
+            const term = `%${search.trim()}%`;
+            conditions.push(or(ilike(users.name, term), ilike(users.email, term))!);
+        }
         
-        let query = db.select().from(users).where(and(...conditions));
-        
-        return query.limit(limit).offset((page - 1) * limit);
+        return db
+            .select()
+            .from(users)
+            .where(and(...conditions))
+            .orderBy(getOrderClause(sortBy, sortOrder))
+            .limit(limit)
+            .offset((page - 1) * limit);
     }
 
     async findById(id: number) {

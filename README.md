@@ -415,6 +415,9 @@ Tokens are set as HttpOnly cookies automatically — no token field in the body.
 | `page` | number | 1 | Pagination page |
 | `limit` | number | 10 | Results per page |
 | `role` | string | — | Filter by role (`admin`/`member`) |
+| `sortBy` | string | `createdAt` | Sort field (`id`, `name`, `email`, `role`, `createdAt`) |
+| `sortOrder` | string | `desc` | Sort direction (`asc`, `desc`) |
+| `search` | string | — | Case-insensitive keyword search on `name` or `email` |
 
 **PATCH /user/:id body** (all fields optional):
 ```json
@@ -456,10 +459,13 @@ Tokens are set as HttpOnly cookies automatically — no token field in the body.
 
 **GET /project/my-projects query params:**
 
-| Param | Default | Description |
-|---|---|---|
-| `page` | 1 | |
-| `limit` | 10 | Max 100 |
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `page` | number | 1 | Pagination page |
+| `limit` | number | 10 | Max 100 |
+| `sortBy` | string | `createdAt` | Sort field (`id`, `title`, `createdAt`, `updatedAt`) |
+| `sortOrder` | string | `desc` | Sort direction (`asc`, `desc`) |
+| `search` | string | — | Case-insensitive keyword search on `title` or `description` |
 
 ### 4.4 Task Endpoints
 
@@ -495,6 +501,7 @@ Tokens are set as HttpOnly cookies automatically — no token field in the body.
 | `limit` | number | 10 | Max 100 |
 | `sortBy` | string | `createdAt` | `id`, `createdAt`, `updatedAt`, `priority`, `status`, `dueDate` |
 | `sortOrder` | string | `desc` | `asc`, `desc` |
+| `search` | string | — | Case-insensitive keyword search on `title` or `description` |
 
 ---
 
@@ -705,10 +712,16 @@ npm run test:project  # project tests
 
 Tests use **Jest + SWC** (via `@swc/jest`) for fast TypeScript transpilation. Repositories are mocked at the service layer so tests are unit-pure — no real DB connection needed.
 
-**Current test coverage:**
-- `tests/auth/auth.controller.test.ts` — controller-level auth flow tests
-- `tests/auth/auth.service.test.ts` — refresh token logic, revocation
-- `tests/users/user.service.test.ts` — full user service coverage (create, login, update, soft-delete)
+**Current test coverage (10 test suites, 135+ tests):**
+- `tests/auth/unit/auth.service.test.ts` — refresh token logic, revocation
+- `tests/auth/unit/auth.controller.test.ts` — controller-level auth flow tests
+- `tests/auth/integration/auth.route.test.ts` — HTTP integration tests for auth routes
+- `tests/users/unit/user.service.test.ts` — user CRUD, update, soft-delete
+- `tests/users/integration/user.route.test.ts` — HTTP integration tests for user routes
+- `tests/projects/unit/project.service.test.ts` — project CRUD, membership, ownership guards, search & sorting
+- `tests/projects/integration/project.route.test.ts` — HTTP integration tests for project routes
+- `tests/tasks/unit/task.service.test.ts` — task CRUD, project ownership & member authorization
+- `tests/tasks/integration/task.route.test.ts` — HTTP integration tests for task routes
 
 ---
 

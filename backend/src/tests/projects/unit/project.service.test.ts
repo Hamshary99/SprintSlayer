@@ -883,6 +883,15 @@ describe("ProjectService.getMyProjects()", () => {
 
     expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
   });
+
+  it("37c — should pass sortBy, sortOrder, and search params to repo", async () => {
+    mockUserRepo.findById.mockResolvedValue([MEMBER_USER]);
+    mockProjectRepo.getProjectsByMemberId.mockResolvedValue([FAKE_PROJECT]);
+
+    await service.getMyProjects(2, 1, 10, "title", "asc", "Sprint");
+
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10, "title", "asc", "Sprint");
+  });
 });
 
 

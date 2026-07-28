@@ -1,4 +1,4 @@
-import { UserRepository } from "../repositories/user.repository.js";
+import { UserRepository, UserSortField, SortOrder } from "../repositories/user.repository.js";
 import { CreateUserDto, UpdateUserDto, UserLoginDto } from "../dto/user.dto.js";
 import { hashPassword, comparePassword } from "../utils/password.hash.util.js";
 import { generateAccessToken, generateRefreshToken } from "../../../common/utils/jwt.util.js";
@@ -46,10 +46,27 @@ export class UserService {
         return { userData, accessToken, refreshToken };
     }
 
-    async findAll(page: number = 1, limit: number = 10, role?: string) {
+    async findAll(
+        page: number = 1,
+        limit: number = 10,
+        role?: string,
+        sortBy?: UserSortField,
+        sortOrder?: SortOrder,
+        search?: string,
+    ) {
+        const args: any[] = [page, limit];
+        if (role !== undefined || sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
+            args.push(role);
+            if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
+                args.push(sortBy, sortOrder);
+                if (search !== undefined) {
+                    args.push(search);
+                }
+            }
+        }
         // Hide Sensitive Data first
-        const users = await this.userRepository.findAll(page, limit, role);
-        return users.map((user) => {
+        const users = await (this.userRepository.findAll as any)(...args);
+        return users.map((user: any) => {
             const { passwordHash, refreshToken, ...userData } = user;
             return userData;
         });

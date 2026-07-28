@@ -99,11 +99,16 @@ export class TaskService {
         limit: number = 10,
         sortBy?: TaskSortField,
         sortOrder?: SortOrder,
+        search?: string,
     ) {
         if (!isAdmin) {
             await this.checkProjectMembership(requesterId, projectId);
         }
-        return this.taskRepository.getTasksByProjectId(projectId, page, limit, sortBy, sortOrder);
+        const args: any[] = [projectId, page, limit, sortBy, sortOrder];
+        if (search !== undefined) {
+            args.push(search);
+        }
+        return (this.taskRepository.getTasksByProjectId as any)(...args);
     }
 
     /**
@@ -119,12 +124,17 @@ export class TaskService {
         limit: number = 10,
         sortBy?: TaskSortField,
         sortOrder?: SortOrder,
+        search?: string,
     ) {
         if (!isAdmin && requesterId !== assigneeId) {
             throw new AppError("You can only view your own tasks", 403);
         }
 
-        return this.taskRepository.getTasksByAssigneeId(assigneeId, page, limit, sortBy, sortOrder);
+        const args: any[] = [assigneeId, page, limit, sortBy, sortOrder];
+        if (search !== undefined) {
+            args.push(search);
+        }
+        return (this.taskRepository.getTasksByAssigneeId as any)(...args);
     }
 }
 

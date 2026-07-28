@@ -1,6 +1,6 @@
 import { tasks } from "../schemas/task.schema.js";
 import { db } from "../../../config/db.config.js";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc, ilike, or } from "drizzle-orm";
 import type { CreateTaskDto, UpdateTaskDto } from "../dto/task.dto.js";
 
 export type TaskSortField =
@@ -66,11 +66,18 @@ export class TaskRepository {
     limit: number = 10,
     sortBy?: TaskSortField,
     sortOrder?: SortOrder,
+    search?: string,
   ) {
+    const conditions = [eq(tasks.projectId, projectId)];
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);
+    }
+
     return db
       .select()
       .from(tasks)
-      .where(eq(tasks.projectId, projectId))
+      .where(and(...conditions))
       .orderBy(getOrderClause(sortBy, sortOrder))
       .limit(limit)
       .offset((page - 1) * limit);
@@ -82,11 +89,18 @@ export class TaskRepository {
     limit: number = 10,
     sortBy?: TaskSortField,
     sortOrder?: SortOrder,
+    search?: string,
   ) {
+    const conditions = [eq(tasks.assigneeId, assigneeId)];
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);
+    }
+
     return db
       .select()
       .from(tasks)
-      .where(eq(tasks.assigneeId, assigneeId))
+      .where(and(...conditions))
       .orderBy(getOrderClause(sortBy, sortOrder))
       .limit(limit)
       .offset((page - 1) * limit);
@@ -98,11 +112,18 @@ export class TaskRepository {
     limit: number = 10,
     sortBy?: TaskSortField,
     sortOrder?: SortOrder,
+    search?: string,
   ) {
+    const conditions = [eq(tasks.creatorId, creatorId)];
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);
+    }
+
     return db
       .select()
       .from(tasks)
-      .where(eq(tasks.creatorId, creatorId))
+      .where(and(...conditions))
       .orderBy(getOrderClause(sortBy, sortOrder))
       .limit(limit)
       .offset((page - 1) * limit);
@@ -113,10 +134,20 @@ export class TaskRepository {
     limit: number = 10,
     sortBy?: TaskSortField,
     sortOrder?: SortOrder,
+    search?: string,
   ) {
-    return db
-      .select()
-      .from(tasks)
+    const conditions = [];
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);
+    }
+
+    let query = db.select().from(tasks);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return query
       .orderBy(getOrderClause(sortBy, sortOrder))
       .limit(limit)
       .offset((page - 1) * limit);

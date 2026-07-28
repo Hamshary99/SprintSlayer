@@ -85,19 +85,26 @@ class ProjectController {
   };
 
   /**
-   * Returns all projects the authenticated user is a member of (paginated).
-   * Query params: ?page=1&limit=10
+   * Returns all projects the authenticated user is a member of (paginated, sortable, searchable).
+   * Query params: ?page=1&limit=10&sortBy=createdAt&sortOrder=desc&search=keyword
    */
   getMyProjects = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Math.max(1, Number(req.query.page) || 1);
       const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+      const sortBy = req.query.sortBy as any;
+      const sortOrder = req.query.sortOrder as any;
+      const search = req.query.search as string;
 
-      const projects = await this.projectService.getMyProjects(
-        req.user!.id,
-        page,
-        limit,
-      );
+      const args: any[] = [req.user!.id, page, limit];
+      if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
+        args.push(sortBy, sortOrder);
+        if (search !== undefined) {
+          args.push(search);
+        }
+      }
+
+      const projects = await (this.projectService.getMyProjects as any)(...args);
       res.json(projects);
     } catch (err) {
       next(err);

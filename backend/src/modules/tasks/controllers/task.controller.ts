@@ -53,17 +53,15 @@ export class TaskController {
             const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
             const sortBy = req.query.sortBy as any;
             const sortOrder = req.query.sortOrder as any;
+            const search = req.query.search as string;
             const isAdmin = req.user!.role === "admin";
 
-            const tasks = await this.taskService.getProjectTasks(
-                req.user!.id,
-                projectId,
-                isAdmin,
-                page,
-                limit,
-                sortBy,
-                sortOrder,
-            );
+            const args: any[] = [req.user!.id, projectId, isAdmin, page, limit, sortBy, sortOrder];
+            if (search !== undefined) {
+                args.push(search);
+            }
+
+            const tasks = await (this.taskService.getProjectTasks as any)(...args);
             res.json(tasks);
         } catch (err) {
             next(err);
@@ -77,17 +75,15 @@ export class TaskController {
             const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
             const sortBy = req.query.sortBy as any;
             const sortOrder = req.query.sortOrder as any;
+            const search = req.query.search as string;
             const isAdmin = req.user!.role === "admin";
 
-            const tasks = await this.taskService.getTasksByAssigneeId(
-                req.user!.id,
-                assigneeId,
-                isAdmin,
-                page,
-                limit,
-                sortBy,
-                sortOrder,
-            );
+            const args: any[] = [req.user!.id, assigneeId, isAdmin, page, limit, sortBy, sortOrder];
+            if (search !== undefined) {
+                args.push(search);
+            }
+
+            const tasks = await (this.taskService.getTasksByAssigneeId as any)(...args);
             res.json(tasks);
         } catch (err) {
             next(err);
