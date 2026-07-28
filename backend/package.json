@@ -7,7 +7,7 @@
     "test": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose",
     "test:user": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=users/user.service",
     "test:auth": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=auth/",
-    "test:project": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=projects/",
+    "test:project": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/projects/",
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",

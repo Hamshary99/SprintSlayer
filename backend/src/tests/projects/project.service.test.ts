@@ -755,147 +755,169 @@ describe("ProjectService.deleteMemberFromProject()", () => {
 // =====================================================================
 
 describe("ProjectService.getProjectById()", () => {
-  it("32 — should return project when it exists (happy path)", async () => {
+  it("32 — should return project when requester is a member (happy path)", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([FAKE_MEMBER_DETAIL]);
 
-    const result = await service.getProjectById(10);
+    const result = await service.getProjectById(10, 2);
 
-    logIO("getProjectById — happy path", { id: 10 }, result);
+    logIO("getProjectById — happy path", { id: 10, requesterId: 2 }, result);
 
     expect(result).toEqual([FAKE_PROJECT]);
     expect(mockProjectRepo.getProjectById).toHaveBeenCalledWith(10);
+    expect(mockProjectRepo.getProjectMemberByProjectIdAndUserId).toHaveBeenCalledWith(10, 2);
   });
 
-  it("33 — should return empty array when project does not exist", async () => {
+  it("33 — should throw 404 when project does not exist", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([]);
 
-    const result = await service.getProjectById(9999);
+    let error: unknown;
+    try {
+      await service.getProjectById(9999, 1);
+    } catch (e) {
+      error = e;
+    }
 
-    logIO("getProjectById — not found", { id: 9999 }, result);
+    logIO("getProjectById — not found", { id: 9999, requesterId: 1 }, {
+      error: (error as Error)?.message,
+      statusCode: (error as any)?.statusCode,
+    });
 
-    expect(result).toEqual([]);
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as any).statusCode).toBe(404);
+    expect((error as Error).message).toBe("Project not found");
   });
 
-  it("34 — should handle boundary id values (0)", async () => {
-    mockProjectRepo.getProjectById.mockResolvedValue([]);
+  it("34 — should throw 403 when requester is not a member of the project", async () => {
+    mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([]);
 
-    const result = await service.getProjectById(0);
+    let error: unknown;
+    try {
+      await service.getProjectById(10, 999);
+    } catch (e) {
+      error = e;
+    }
 
-    logIO("getProjectById — id=0", { id: 0 }, result);
+    logIO("getProjectById — not a member", { id: 10, requesterId: 999 }, {
+      error: (error as Error)?.message,
+      statusCode: (error as any)?.statusCode,
+    });
 
-    expect(result).toEqual([]);
-    expect(mockProjectRepo.getProjectById).toHaveBeenCalledWith(0);
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as any).statusCode).toBe(403);
+    expect((error as Error).message).toBe("You are not a member of this project");
   });
 });
 
 // =====================================================================
-//  7. getProjectsByOwnerId()
+//  7. getProjectsByMemberId() — returns projects the user is a member of
 // =====================================================================
 
-describe("ProjectService.getProjectsByOwnerId()", () => {
-  it("35 — should return paginated projects for owner (happy path)", async () => {
+describe("ProjectService.getProjectsByMemberId()", () => {
+  it("35 — should return paginated projects for member (happy path)", async () => {
     const projects = [FAKE_PROJECT, { ...FAKE_PROJECT, id: 11, title: "Second" }];
-    mockProjectRepo.getProjectsByOwnerId.mockResolvedValue(projects);
+    mockProjectRepo.getProjectsByMemberId.mockResolvedValue(projects);
 
-    const result = await service.getProjectsByOwnerId(1, 1, 10);
+    const result = await service.getProjectsByMemberId(1, 1, 10);
 
-    logIO("getProjectsByOwnerId — happy path", { ownerId: 1, page: 1, limit: 10 }, result);
+    logIO("getProjectsByMemberId — happy path", { memberId: 1, page: 1, limit: 10 }, result);
 
     expect(result).toHaveLength(2);
-    expect(mockProjectRepo.getProjectsByOwnerId).toHaveBeenCalledWith(1, 1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(1, 1, 10);
   });
 
-  it("36 — should return empty array when owner has no projects", async () => {
-    mockProjectRepo.getProjectsByOwnerId.mockResolvedValue([]);
+  it("36 — should return empty array when user has no projects", async () => {
+    mockProjectRepo.getProjectsByMemberId.mockResolvedValue([]);
 
-    const result = await service.getProjectsByOwnerId(9999, 1, 10);
+    const result = await service.getProjectsByMemberId(9999, 1, 10);
 
-    logIO("getProjectsByOwnerId — no projects", { ownerId: 9999 }, result);
+    logIO("getProjectsByMemberId — no projects", { memberId: 9999 }, result);
 
     expect(result).toEqual([]);
   });
 
   it("37 — should use default pagination (page=1, limit=10) when no args provided", async () => {
-    mockProjectRepo.getProjectsByOwnerId.mockResolvedValue([]);
+    mockProjectRepo.getProjectsByMemberId.mockResolvedValue([]);
 
-    await service.getProjectsByOwnerId(1);
+    await service.getProjectsByMemberId(1);
 
-    logIO("getProjectsByOwnerId — default pagination", { ownerId: 1 }, "void");
+    logIO("getProjectsByMemberId — default pagination", { memberId: 1 }, "void");
 
-    expect(mockProjectRepo.getProjectsByOwnerId).toHaveBeenCalledWith(1, 1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(1, 1, 10);
   });
 });
 
-// =====================================================================
-//  8. getProjectsByMemberId()
-// =====================================================================
 
-describe("ProjectService.getProjectsByMemberId()", () => {
-  it("38 — should return projects the user is a member of (happy path)", async () => {
-    mockProjectRepo.getProjectsByMemberId.mockResolvedValue([FAKE_PROJECT]);
-
-    const result = await service.getProjectsByMemberId(2, 1, 10);
-
-    logIO("getProjectsByMemberId — happy path", { memberId: 2, page: 1, limit: 10 }, result);
-
-    expect(result).toEqual([FAKE_PROJECT]);
-    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
-  });
-
-  it("39 — should return empty array when user is not a member of any project", async () => {
-    mockProjectRepo.getProjectsByMemberId.mockResolvedValue([]);
-
-    const result = await service.getProjectsByMemberId(9999, 1, 10);
-
-    logIO("getProjectsByMemberId — no memberships", { memberId: 9999 }, result);
-
-    expect(result).toEqual([]);
-  });
-
-  it("40 — should use default pagination when no args provided", async () => {
-    mockProjectRepo.getProjectsByMemberId.mockResolvedValue([]);
-
-    await service.getProjectsByMemberId(2);
-
-    logIO("getProjectsByMemberId — default pagination", { memberId: 2 }, "void");
-
-    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
-  });
-});
 
 // =====================================================================
 //  9. getMembersOfProject()
 // =====================================================================
 
 describe("ProjectService.getMembersOfProject()", () => {
-  it("41 — should return members list for a project (happy path)", async () => {
+  it("38 — should return members list when requester is a member (happy path)", async () => {
     const members = [FAKE_MEMBER_DETAIL, { ...FAKE_MEMBER_DETAIL, userId: 3, email: "three@example.com" }];
+    mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([FAKE_MEMBER_DETAIL]);
     mockProjectRepo.getProjectMemberByProjectId.mockResolvedValue(members);
 
-    const result = await service.getMembersOfProject(10, 1, 10);
+    const result = await service.getMembersOfProject(10, 2, 1, 10);
 
-    logIO("getMembersOfProject — happy path", { projectId: 10, page: 1, limit: 10 }, result);
+    logIO("getMembersOfProject — happy path", { projectId: 10, requesterId: 2, page: 1, limit: 10 }, result);
 
     expect(result).toHaveLength(2);
     expect(mockProjectRepo.getProjectMemberByProjectId).toHaveBeenCalledWith(10, 1, 10);
   });
 
-  it("42 — should return empty array when project has no members", async () => {
-    mockProjectRepo.getProjectMemberByProjectId.mockResolvedValue([]);
+  it("39 — should throw 404 when project does not exist", async () => {
+    mockProjectRepo.getProjectById.mockResolvedValue([]);
 
-    const result = await service.getMembersOfProject(9999, 1, 10);
+    let error: unknown;
+    try {
+      await service.getMembersOfProject(9999, 1, 1, 10);
+    } catch (e) {
+      error = e;
+    }
 
-    logIO("getMembersOfProject — no members", { projectId: 9999 }, result);
+    logIO("getMembersOfProject — project not found", { projectId: 9999, requesterId: 1 }, {
+      error: (error as Error)?.message,
+      statusCode: (error as any)?.statusCode,
+    });
 
-    expect(result).toEqual([]);
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as any).statusCode).toBe(404);
+    expect((error as Error).message).toBe("Project not found");
   });
 
-  it("43 — should use default pagination when no args provided", async () => {
+  it("40 — should throw 403 when requester is not a member of the project", async () => {
+    mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([]);
+
+    let error: unknown;
+    try {
+      await service.getMembersOfProject(10, 999, 1, 10);
+    } catch (e) {
+      error = e;
+    }
+
+    logIO("getMembersOfProject — not a member", { projectId: 10, requesterId: 999 }, {
+      error: (error as Error)?.message,
+      statusCode: (error as any)?.statusCode,
+    });
+
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as any).statusCode).toBe(403);
+    expect((error as Error).message).toBe("You are not a member of this project");
+  });
+
+  it("41 — should use default pagination when no page/limit provided", async () => {
+    mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
+    mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([FAKE_MEMBER_DETAIL]);
     mockProjectRepo.getProjectMemberByProjectId.mockResolvedValue([]);
 
-    await service.getMembersOfProject(10);
+    await service.getMembersOfProject(10, 2);
 
-    logIO("getMembersOfProject — default pagination", { projectId: 10 }, "void");
+    logIO("getMembersOfProject — default pagination", { projectId: 10, requesterId: 2 }, "void");
 
     expect(mockProjectRepo.getProjectMemberByProjectId).toHaveBeenCalledWith(10, 1, 10);
   });

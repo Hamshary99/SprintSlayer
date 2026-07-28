@@ -36,6 +36,19 @@ export class ProjectService {
     }
   }
 
+  /**
+   * Helper to verify that a user is a member of (or owner of) a project.
+   */
+  private async checkMembership(userId: number, projectId: number) {
+    const membership = await this.projectRepository.getProjectMemberByProjectIdAndUserId(
+      projectId,
+      userId,
+    );
+    if (membership.length === 0) {
+      throw new AppError("You are not a member of this project", 403);
+    }
+  }
+
   async createProject(project: CreateProjectDto) {
     // Only admins can create projects
     await this.checkAdminAndOwnership(project.ownerId);
@@ -125,17 +138,32 @@ export class ProjectService {
     return this.projectRepository.deleteMemberFromProject(projectMember);
   }
 
-  async getProjectById(projectId: number) {
-    return this.projectRepository.getProjectById(projectId);
+  async getProjectById(projectId: number, requesterId: number) {
+    const project = await this.projectRepository.getProjectById(projectId);
+    if (project.length === 0) {
+      throw new AppError("Project not found", 404);
+    }
+
+    // Verify the requester is a member of this project
+    await this.checkMembership(requesterId, projectId);
+
+    return project;
   }
-  async getProjectsByOwnerId(ownerId: number, page = 1, limit = 10) {
-    return this.projectRepository.getProjectsByOwnerId(ownerId, page, limit);
-  }
+
   async getProjectsByMemberId(memberId: number, page = 1, limit = 10) {
     return this.projectRepository.getProjectsByMemberId(memberId, page, limit);
   }
 
-  async getMembersOfProject(projectId: number, page = 1, limit = 10) {
+  async getMembersOfProject(projectId: number, requesterId: number, page = 1, limit = 10) {
+    // Verify the project exists
+    const project = await this.projectRepository.getProjectById(projectId);
+    if (project.length === 0) {
+      throw new AppError("Project not found", 404);
+    }
+
+    // Verify the requester is a member of this project
+    await this.checkMembership(requesterId, projectId);
+
     return this.projectRepository.getProjectMemberByProjectId(projectId, page, limit);
   }
 }

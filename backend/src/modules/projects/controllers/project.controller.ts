@@ -74,6 +74,7 @@ class ProjectController {
     try {
       const project = await this.projectService.getProjectById(
         Number(req.params.id),
+        req.user!.id,
       );
       res.json(project);
     } catch (err) {
@@ -81,21 +82,19 @@ class ProjectController {
     }
   };
 
-  getProjectsByOwnerId = async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * Returns all projects the authenticated user is a member of (paginated).
+   * Query params: ?page=1&limit=10
+   */
+  getMyProjects = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const projects = await this.projectService.getProjectsByOwnerId(
-        Number(req.params.ownerId),
-      );
-      res.json(projects);
-    } catch (err) {
-      next(err);
-    }
-  };
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
 
-  getProjectsByMemberId = async (req: Request, res: Response, next: NextFunction) => {
-    try {
       const projects = await this.projectService.getProjectsByMemberId(
-        Number(req.params.memberId),
+        req.user!.id,
+        page,
+        limit,
       );
       res.json(projects);
     } catch (err) {
@@ -105,8 +104,14 @@ class ProjectController {
 
   getMembersOfProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+
       const members = await this.projectService.getMembersOfProject(
         Number(req.params.projectId),
+        req.user!.id,
+        page,
+        limit,
       );
       res.json(members);
     } catch (err) {

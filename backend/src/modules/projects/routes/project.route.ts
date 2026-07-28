@@ -12,9 +12,8 @@ router.delete(
   requireAuth,
   projectController.deleteMemberFromProject,
 );
-router.get("/:id", projectController.getProjectById);
-router.get("/owner/:ownerId", projectController.getProjectsByOwnerId);
-router.get("/member/:memberId", projectController.getProjectsByMemberId);
-router.get("/members/:projectId", projectController.getMembersOfProject);
+router.get("/my-projects", requireAuth, projectController.getMyProjects);
+router.get("/:id", requireAuth, projectController.getProjectById);
+router.get("/members/:projectId", requireAuth, projectController.getMembersOfProject);
 
 export default router;
