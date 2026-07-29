@@ -12,13 +12,15 @@ export const env = {
     NODE_ENV: process.env.NODE_ENV || 'dev',
 
     // Database
-    DB_HOST: required('DB_HOST'),
+    DB_HOST: process.env.DB_HOST || 'localhost',
     DB_PORT: Number(process.env.DB_PORT) || 5432,
-    DB_USER: required('DB_USER'),
-    DB_PASSWORD: required('DB_PASSWORD'),
-    DB_NAME: required('DB_NAME'),
+    DB_USER: process.env.DB_USER || 'postgres',
+    DB_PASSWORD: process.env.DB_PASSWORD || '',
+    DB_NAME: process.env.DB_NAME || 'sprintslayer',
     // Composed connection URL (used by Drizzle and health-check logs)
-    get DATABASE_URL() {
+    get DATABASE_URL(): string {
+        if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+        if (process.env.POSTGRES_URL) return process.env.POSTGRES_URL;
         return `postgresql://${this.DB_USER}:${this.DB_PASSWORD}@${this.DB_HOST}:${this.DB_PORT}/${this.DB_NAME}`;
     },
 

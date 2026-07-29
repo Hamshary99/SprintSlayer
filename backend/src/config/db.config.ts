@@ -1,10 +1,16 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
 import { env } from './env.config.js';
 
-export const db = drizzle(env.DATABASE_URL);
+const isProduction = env.NODE_ENV === 'production' || process.env.NODE_ENV === 'production';
+const requiresSsl = isProduction || env.DATABASE_URL.includes('sslmode=require');
 
-// Get the underlying Pool for raw connection checks
-const pool = (db as any).$client;
+const pool = new pg.Pool({
+    connectionString: env.DATABASE_URL,
+    ssl: requiresSsl ? { rejectUnauthorized: false } : false,
+});
+
+export const db = drizzle({ client: pool });
 
 /**
  * Verifies the database is reachable before the server starts.
@@ -17,7 +23,7 @@ export const checkDbConnection = async (): Promise<void> => {
     try {
         const client = await pool.connect();
         const elapsed = Date.now() - start;
-        console.log(`Database connected (${elapsed}ms) — ${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME} as ${env.DB_USER}`);
+        console.log(`Database connected successfully (${elapsed}ms)`);
         client.release();
     } catch (error) {
         console.error('Failed to connect to the database:', error);
