@@ -27,12 +27,15 @@ export interface ProjectMember {
     membershipId: number;
 }
 
+export type TaskStatus = 'to_do' | 'in_progress' | 'done';
+export type TaskPriority = 'high' | 'medium' | 'low';
+
 export interface Task {
     id: number;
     title: string;
     description: string | null;
-    status: 'to_do' | 'in_progress' | 'done';
-    priority: 'high' | 'medium' | 'low';
+    status: TaskStatus;
+    priority: TaskPriority;
     dueDate: string | null;
     creatorId: number;
     assigneeId: number | null;
@@ -68,8 +71,8 @@ export interface UpdateProjectRequest {
 export interface CreateTaskRequest {
     title: string;
     description?: string;
-    status?: 'to_do' | 'in_progress' | 'done';
-    priority?: 'high' | 'medium' | 'low';
+    status?: TaskStatus;
+    priority?: TaskPriority;
     dueDate?: string;
     assigneeId?: number;
     projectId: number;
@@ -78,8 +81,8 @@ export interface CreateTaskRequest {
 export interface UpdateTaskRequest {
     title?: string;
     description?: string;
-    status?: 'to_do' | 'in_progress' | 'done';
-    priority?: 'high' | 'medium' | 'low';
+    status?: TaskStatus;
+    priority?: TaskPriority;
     dueDate?: string;
     assigneeId?: number;
 }

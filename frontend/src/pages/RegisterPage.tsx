@@ -31,7 +31,7 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left branding */}
-      <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-[45%] bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-indigo-500 flex items-center justify-center">
             <span className="text-white font-black text-lg">S</span>
@@ -70,10 +70,12 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Full name</label>
+              <label htmlFor="register-name" className="block text-sm font-medium text-slate-300 mb-2">Full name</label>
               <input
+                id="register-name"
                 type="text"
                 required
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
@@ -81,10 +83,12 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+              <label htmlFor="register-email" className="block text-sm font-medium text-slate-300 mb-2">Email</label>
               <input
+                id="register-email"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -92,11 +96,13 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+              <label htmlFor="register-password" className="block text-sm font-medium text-slate-300 mb-2">Password</label>
               <input
+                id="register-password"
                 type="password"
                 required
                 minLength={8}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min 8 chars, mixed case + number"

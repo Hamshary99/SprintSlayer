@@ -40,7 +40,19 @@ export class ProjectRepository {
         return db.delete(projectMembers).where(and(eq(projectMembers.projectId, projectMemberData.projectId), eq(projectMembers.userId, projectMemberData.userId))).returning();
     }
     async getProjectById(projectId: number) {
-        return db.select().from(project).where(eq(project.id, projectId));
+        return db
+            .select({
+                id: project.id,
+                title: project.title,
+                description: project.description,
+                ownerId: project.ownerId,
+                ownerName: users.name,
+                createdAt: project.createdAt,
+                updatedAt: project.updatedAt
+            })
+            .from(project)
+            .innerJoin(users, eq(project.ownerId, users.id))
+            .where(eq(project.id, projectId));
     }
     async getProjectsByOwnerId(
         ownerId: number,
@@ -57,8 +69,17 @@ export class ProjectRepository {
         }
 
         return db
-            .select()
+            .select({
+                id: project.id,
+                title: project.title,
+                description: project.description,
+                ownerId: project.ownerId,
+                ownerName: users.name,
+                createdAt: project.createdAt,
+                updatedAt: project.updatedAt
+            })
             .from(project)
+            .innerJoin(users, eq(project.ownerId, users.id))
             .where(and(...conditions))
             .orderBy(getOrderClause(sortBy, sortOrder))
             .limit(limit)
@@ -84,11 +105,13 @@ export class ProjectRepository {
                 title: project.title,
                 description: project.description,
                 ownerId: project.ownerId,
+                ownerName: users.name,
                 createdAt: project.createdAt,
                 updatedAt: project.updatedAt
             })
             .from(project)
             .innerJoin(projectMembers, eq(project.id, projectMembers.projectId))
+            .innerJoin(users, eq(project.ownerId, users.id))
             .where(and(...conditions))
             .orderBy(getOrderClause(sortBy, sortOrder))
             .limit(limit)
@@ -108,7 +131,18 @@ export class ProjectRepository {
             conditions.push(or(ilike(project.title, term), ilike(project.description, term))!);
         }
 
-        let query = db.select().from(project);
+        let query = db
+            .select({
+                id: project.id,
+                title: project.title,
+                description: project.description,
+                ownerId: project.ownerId,
+                ownerName: users.name,
+                createdAt: project.createdAt,
+                updatedAt: project.updatedAt
+            })
+            .from(project)
+            .innerJoin(users, eq(project.ownerId, users.id)) as any;
         if (conditions.length > 0) {
             query = query.where(and(...conditions)) as any;
         }

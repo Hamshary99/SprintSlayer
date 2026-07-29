@@ -167,3 +167,26 @@ paths:
       responses:
         '200':
           description: List of project members
+
+components:
+  schemas:
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        ownerId:
+          type: integer
+        ownerName:
+          type: string
+          description: "Name of the project owner, populated by joining the users table"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

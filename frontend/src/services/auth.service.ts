@@ -1,5 +1,5 @@
 import type { AuthResponse, LoginRequest, RegisterRequest } from '@/types';
-import api from './api';
+import api, { refreshSession } from './api';
 
 export const authService = {
     register: (data: RegisterRequest) =>
@@ -11,6 +11,11 @@ export const authService = {
     logout: () =>
         api.post('/auth/logout'),
 
-    refresh: () =>
-        api.post<AuthResponse>('/auth/refresh'),
+    refresh: refreshSession,
+
+    forgotPassword: (email: string) =>
+        api.post<{ message: string }>('/auth/forgot-password', { email }),
+
+    resetPassword: (token: string, newPassword: string) =>
+        api.post<{ message: string }>('/auth/reset-password', { token, newPassword }),
 };

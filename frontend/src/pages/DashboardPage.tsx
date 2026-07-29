@@ -1,61 +1,92 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { CreateProjectDialog } from "@/components/dashboard/CreateProjectDialog";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { ProjectList } from "@/components/dashboard/ProjectList";
+import { DeleteProjectDialog } from "@/components/projects/DeleteProjectDialog";
 import { useAuth } from "@/context/AuthContext";
 import { projectService } from "@/services/project.service";
-import type { Project } from "@/types";
-import { getMemberColor } from "@/utils/ownerColors";
+import type { CreateProjectRequest, Project } from "@/types";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  /* Delete flow */
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     projectService
-      .getMyProjects()
+      .getMyProjects({ limit: 100 })
       .then((res) => setProjects(res.data))
-      .catch(() => setProjects([]))
+      .catch(() => setLoadError("Unable to load projects. Please refresh the page."))
       .finally(() => setLoading(false));
   }, []);
 
+  /* Auto-dismiss toast */
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const handleCreateProject = async (project: CreateProjectRequest) => {
+    const response = await projectService.create(project);
+    const createdProject = response.data[0];
+
+    if (!createdProject) {
+      throw new Error("The project was created but no project data was returned.");
+    }
+
+    setProjects((currentProjects) => [
+      { ...createdProject, ownerName: createdProject.ownerName ?? user?.name },
+      ...currentProjects,
+    ]);
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    setIsDeleting(true);
+    try {
+      await projectService.delete(projectToDelete.id);
+      setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
+      setToast({ msg: `"${projectToDelete.title}" was deleted.`, type: "success" });
+      setProjectToDelete(null);
+    } catch (e: unknown) {
+      const msg =
+        (e as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        "Failed to delete project.";
+      setToast({ msg, type: "error" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-950">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 flex flex-col">
-        <div className="p-5 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-indigo-500 flex items-center justify-center">
-              <span className="text-white font-black text-sm">S</span>
-            </div>
-            <span className="text-white font-bold">SprintSlayer</span>
-          </div>
-        </div>
+      <DashboardSidebar user={user} onLogout={logout} />
 
-        <nav className="flex-1 p-4 space-y-1">
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-            Projects
-          </a>
-        </nav>
-
-        <div className="p-4 border-t border-slate-800">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="w-full text-left px-3 py-1.5 rounded text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition"
-          >
-            Sign out
-          </button>
+      {/* Toast */}
+      {toast && (
+        <div
+          aria-live="assertive"
+          className={`fixed right-4 top-4 z-[200] max-w-sm rounded-lg border px-4 py-3 text-sm shadow-lg backdrop-blur animate-[slideIn_0.25s_ease-out] ${
+            toast.type === "success"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+              : "border-red-500/30 bg-red-500/10 text-red-200"
+          }`}
+        >
+          <p className="font-semibold">{toast.type === "success" ? "Success" : "Error"}</p>
+          <p className={`mt-1 ${toast.type === "success" ? "text-emerald-300" : "text-red-300"}`}>
+            {toast.msg}
+          </p>
         </div>
-      </aside>
+      )}
 
       {/* Main content */}
       <main className="flex-1 p-8">
@@ -68,64 +99,43 @@ export default function DashboardPage() {
               </p>
             </div>
             {user?.role === "admin" && (
-              <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition">
-                + New Project
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                New Project
               </button>
             )}
           </div>
 
-          {loading && (
-            <div className="text-slate-500 py-20 text-center">Loading projects...</div>
-          )}
-
-          {!loading && projects.length === 0 && (
-            <div className="text-center py-20 border border-dashed border-slate-700 rounded-xl">
-              <p className="text-slate-500 mb-2">No projects yet</p>
-              <p className="text-slate-600 text-sm">Create your first project to get started</p>
-            </div>
-          )}
-
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {projects.map((p) => (
-              <Link
-                key={p.id}
-                to={`/projects/${p.id}`}
-                className="group rounded-xl border border-slate-800 bg-slate-900/40 p-5 hover:border-indigo-500/40 hover:bg-slate-900/70 transition-all"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-white group-hover:text-indigo-300 transition-colors">{p.title}</h3>
-                  <span className="text-[10px] text-slate-600 bg-slate-800 rounded px-1.5 py-0.5">#{p.id}</span>
-                </div>
-                <p className="text-sm text-slate-500 line-clamp-2 mb-4">
-                  {p.description || "No description"}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold text-white ring-1 ring-white/10"
-                      style={{ backgroundColor: getMemberColor(p.ownerName) }}
-                    >
-                      {(p.ownerName || "U").charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-slate-300">{p.ownerName || "Unknown owner"}</p>
-                      <p className="text-[11px] text-slate-500">Owner</p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-slate-600">
-                    {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </span>
-                </div>
-                <div className="mt-4 flex items-center justify-end">
-                  <span className="text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    View &rarr;
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <ProjectList
+            projects={projects}
+            loading={loading}
+            error={loadError}
+            canCreate={user?.role === "admin"}
+            currentUserId={user?.id}
+            onDeleteProject={setProjectToDelete}
+          />
         </div>
       </main>
+
+      {isCreateOpen && (
+        <CreateProjectDialog
+          onClose={() => setIsCreateOpen(false)}
+          onCreate={handleCreateProject}
+        />
+      )}
+
+      {projectToDelete && (
+        <DeleteProjectDialog
+          projectTitle={projectToDelete.title}
+          onConfirm={handleDeleteProject}
+          onClose={() => setProjectToDelete(null)}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 }

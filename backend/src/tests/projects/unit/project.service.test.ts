@@ -105,6 +105,7 @@ const FAKE_PROJECT = {
   title: "SprintSlayer",
   description: "A task management app",
   ownerId: 1,
+  ownerName: "Admin User",
   createdAt: new Date("2026-01-01"),
   updatedAt: new Date("2026-01-01"),
 };

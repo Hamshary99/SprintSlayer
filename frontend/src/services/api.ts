@@ -1,12 +1,23 @@
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
+import type { AuthResponse } from '@/types';
 
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
     withCredentials: true, // send HttpOnly cookies on every request
     headers: { 'Content-Type': 'application/json' },
 });
 
-let refreshPromise: Promise<void> | null = null;
+let refreshPromise: Promise<AxiosResponse<AuthResponse>> | null = null;
+
+export function refreshSession() {
+    refreshPromise ??= api
+        .post<AuthResponse>('/auth/refresh')
+        .finally(() => {
+            refreshPromise = null;
+        });
+
+    return refreshPromise;
+}
 
 // Intercept 401s and attempt a single silent refresh before redirecting.
 api.interceptors.response.use(
@@ -15,34 +26,27 @@ api.interceptors.response.use(
         const original = error.config;
 
         if (!original || error.response?.status !== 401) {
-            return Promise.reject(error);
+            throw error;
         }
 
-        const isAuthRequest = /\/auth\/(login|register|refresh|logout)$/.test(original.url ?? '');
+        const isAuthRequest = /\/auth\/(login|register|refresh)$/.test(original.url ?? '');
         if (isAuthRequest) {
-            return Promise.reject(error);
+            throw error;
         }
 
         if (!original._retry) {
             original._retry = true;
 
             try {
-                if (!refreshPromise) {
-                    refreshPromise = api.post('/auth/refresh').then(() => undefined);
-                }
-
-                await refreshPromise;
+                await refreshSession();
                 return api(original);
             } catch {
-                refreshPromise = null;
                 window.location.assign('/login');
-                return Promise.reject(error);
-            } finally {
-                refreshPromise = null;
+                throw error;
             }
         }
 
-        return Promise.reject(error);
+        throw error;
     },
 );
 
