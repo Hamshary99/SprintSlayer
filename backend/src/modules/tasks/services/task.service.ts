@@ -3,6 +3,7 @@ import { CreateTaskDto, UpdateTaskDto } from "../dto/task.dto.js";
 import { ProjectRepository } from "../../projects/repositories/project.repository.js";
 import { AppError } from "../../../common/error/AppError.js";
 import { auditLogService } from "../../audit/controllers/audit.controller.js";
+import { socketManager } from "../../../sockets/socketManager.js";
 
 export class TaskService {
     private taskRepository = new TaskRepository();
@@ -49,6 +50,9 @@ export class TaskService {
             details: JSON.stringify({ taskId: newTask[0]?.id, title: newTask[0]?.title, status: newTask[0]?.status, projectId: taskData.projectId }),
         });
 
+        // Real-time socket emit
+        socketManager.emitTaskCreated(taskData.projectId, newTask[0]);
+
         return newTask;
     }
 
@@ -70,17 +74,25 @@ export class TaskService {
             });
         }
 
+        // Real-time socket emit
+        socketManager.emitTaskUpdated(task.projectId, updated[0]);
+
         return updated;
     }
 
     async deleteTask(requesterId: number, taskId: number) {
         const taskRes = await this.taskRepository.getTaskById(taskId);
-        const task = taskRes[0];
+        const task = taskRes ? taskRes[0] : undefined;
         if (!task) throw new AppError("Task not found", 404);
 
         await this.checkProjectAccess(requesterId, task.projectId);
 
-        return this.taskRepository.deleteTask(taskId);
+        const deleted = await this.taskRepository.deleteTask(taskId);
+
+        // Real-time socket emit
+        socketManager.emitTaskDeleted(task.projectId, taskId);
+
+        return deleted;
     }
 
     // ─── Read Operations ──────────────────────────────────────────────────────

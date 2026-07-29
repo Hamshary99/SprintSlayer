@@ -5,7 +5,12 @@ let socket: Socket | null = null;
 export const socketService = {
     connect: () => {
         if (!socket) {
-            socket = io('http://localhost:5000', { withCredentials: true });
+            const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const serverUrl = rawUrl.replace(/\/api\/?$/, '');
+            socket = io(serverUrl, {
+                withCredentials: true,
+                transports: ['websocket', 'polling'],
+            });
         }
         return socket;
     },
