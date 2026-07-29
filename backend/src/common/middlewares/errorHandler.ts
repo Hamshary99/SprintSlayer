@@ -8,6 +8,11 @@ export function errorHandler(
     res: Response,
     next: NextFunction
 ) {
+    if (req.headers.origin) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+
     if (err instanceof AppError) {
         // Log HIGH priority audit event for security / access control errors
         if (err.statusCode === 401 || err.statusCode === 403) {
