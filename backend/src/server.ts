@@ -5,6 +5,9 @@ import { AppRoutes } from './app.js';
 
 const app = express();
 
+// Trust Railway reverse proxy so Express recognizes HTTPS connections and sets secure cookies
+app.set('trust proxy', 1);
+
 // Mount all API routes under /api
 app.use('/', AppRoutes.routes());
 

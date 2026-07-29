@@ -47,6 +47,7 @@ export const setAccessTokenCookie = (res: Response, token: string, options?: Set
         httpOnly: true,
         secure: isProd,
         sameSite: isProd ? "none" : "lax",
+        path: '/',
         maxAge: env.ACCESS_COOKIES_EXPIRE
     }
     const cookieOptions = { ...defaultOptions, ...options };
@@ -59,6 +60,7 @@ export const setRefreshTokenCookie = (res: Response, token: string, options?: Se
         httpOnly: true,
         secure: isProd,
         sameSite: isProd ? "none" : "lax",
+        path: '/',
         maxAge: env.REFRESH_COOKIES_EXPIRE
     }
     const cookieOptions = { ...defaultOptions, ...options };
