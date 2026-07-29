@@ -12,36 +12,31 @@ export class TaskService {
     /**
      * Verifies the requester owns the project.
      */
-    private async checkProjectOwnership(requesterId: number, projectId: number) {
+    /**
+     * Verifies the requester is the owner, an admin, or a member of the project.
+     */
+    private async checkProjectAccess(requesterId: number, projectId: number) {
         const projectRes = await this.projectRepository.getProjectById(projectId);
         const project = projectRes[0];
         if (!project) throw new AppError("Project not found", 404);
-        if (project.ownerId !== requesterId) {
-            throw new AppError("You are not the owner of this project", 403);
-        }
-    }
 
-    /**
-     * Verifies the requester is a member of the project.
-     * Used for read-only operations.
-     */
-    private async checkProjectMembership(requesterId: number, projectId: number) {
-        const projectRes = await this.projectRepository.getProjectById(projectId);
-        if (!projectRes[0]) throw new AppError("Project not found", 404);
+        // Project owner always has access
+        if (Number(project.ownerId) === Number(requesterId)) return;
 
+        // Project members also have access to manage tasks
         const memberRes = await this.projectRepository.getProjectMemberByProjectIdAndUserId(
             projectId,
             requesterId,
         );
         if (memberRes.length === 0) {
-            throw new AppError("You are not a member of this project", 403);
+            throw new AppError("You are not authorized to manage tasks in this project", 403);
         }
     }
 
-    // ─── Mutating Operations (admin-gated at route, ownership checked here) ───
+    // ─── Mutating Operations ──────────────────────────────────────────────────
 
     async createTask(taskData: CreateTaskDto, requesterId: number) {
-        await this.checkProjectOwnership(requesterId, taskData.projectId);
+        await this.checkProjectAccess(requesterId, taskData.projectId);
         // creatorId is always the authenticated user — never trust the client body
         taskData.creatorId = requesterId;
         return this.taskRepository.createTask(taskData);
@@ -52,7 +47,7 @@ export class TaskService {
         const task = taskRes[0];
         if (!task) throw new AppError("Task not found", 404);
 
-        await this.checkProjectOwnership(requesterId, task.projectId);
+        await this.checkProjectAccess(requesterId, task.projectId);
 
         return this.taskRepository.updateTask(taskId, taskData);
     }
@@ -62,7 +57,7 @@ export class TaskService {
         const task = taskRes[0];
         if (!task) throw new AppError("Task not found", 404);
 
-        await this.checkProjectOwnership(requesterId, task.projectId);
+        await this.checkProjectAccess(requesterId, task.projectId);
 
         return this.taskRepository.deleteTask(taskId);
     }
@@ -80,7 +75,7 @@ export class TaskService {
         if (!task) throw new AppError("Task not found", 404);
 
         if (!isAdmin) {
-            await this.checkProjectMembership(requesterId, task.projectId);
+            await this.checkProjectAccess(requesterId, task.projectId);
         }
 
         return task;
@@ -102,7 +97,7 @@ export class TaskService {
         search?: string,
     ) {
         if (!isAdmin) {
-            await this.checkProjectMembership(requesterId, projectId);
+            await this.checkProjectAccess(requesterId, projectId);
         }
         const args: any[] = [projectId, page, limit, sortBy, sortOrder];
         if (search !== undefined) {
