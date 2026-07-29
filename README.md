@@ -3,21 +3,23 @@
 > **Technical Recruitment Assessment Submission — Full Stack Node.js Developer (2-Day Challenge)**  
 > **Stack:** Node.js (Express 5) · TypeScript · PostgreSQL · Drizzle ORM · Socket.IO · React (Vite) · TailwindCSS · Swagger · Docker · Railway
 
-[![Railway Deployed](https://img.shields.io/badge/Railway-Deployed-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://sprintslayer-app.up.railway.app/)
-[![OpenAPI/Swagger](https://img.shields.io/badge/Swagger-Interactive_Docs-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://sprintslayer-app.up.railway.app/api-docs)
+[![Railway Frontend](https://img.shields.io/badge/Railway-Frontend_App-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://sprintslayer-app.up.railway.app/)
+[![Railway Backend](https://img.shields.io/badge/Railway-Backend_API-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://sprintslayer-production.up.railway.app/health)
+[![OpenAPI/Swagger](https://img.shields.io/badge/Swagger-Interactive_Docs-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://sprintslayer-production.up.railway.app/api-docs)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Drizzle_ORM-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://orm.drizzle.team/)
 [![Docker Ready](https://img.shields.io/badge/Docker-Compose_Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#-docker-compose-setup-bonus-feature)
 
 ---
 
-## 🌐 Live Production Deployment & Quick Links
+## 🌐 Live Production Deployments & Quick Links
 
 | Service | Live URL / Location | Description |
 | :--- | :--- | :--- |
-| 🚀 **Live API Base URL** | [`https://sprintslayer-app.up.railway.app/api`](https://sprintslayer-app.up.railway.app/api) | Public production deployment hosted on Railway |
-| 📖 **Interactive Swagger UI** | [`https://sprintslayer-app.up.railway.app/api-docs`](https://sprintslayer-app.up.railway.app/api-docs) | Live OpenAPI 3.0 interactive endpoint testing UI |
-| 🟢 **Health Check Endpoint** | [`https://sprintslayer-app.up.railway.app/health`](https://sprintslayer-app.up.railway.app/health) | API + Database pre-flight connectivity status |
+| 🎨 **Live Frontend App** | [`https://sprintslayer-app.up.railway.app`](https://sprintslayer-app.up.railway.app) | Public production React single-page web app hosted on Railway |
+| 🚀 **Live Backend API** | [`https://sprintslayer-production.up.railway.app/api`](https://sprintslayer-production.up.railway.app/api) | Public production Express 5 REST API hosted on Railway |
+| 📖 **Interactive Swagger UI** | [`https://sprintslayer-production.up.railway.app/api-docs`](https://sprintslayer-production.up.railway.app/api-docs) | Live OpenAPI 3.0 interactive endpoint testing UI |
+| 🟢 **Backend Health Check** | [`https://sprintslayer-production.up.railway.app/health`](https://sprintslayer-production.up.railway.app/health) | API + Database pre-flight connectivity status |
 | 📦 **Postman Collection** | [`backend/Postman/SprintSlayer.postman_collection.json`](file:///c:/Users/amido/OneDrive/Desktop/lecs/Projects/SprintSlayer/backend/Postman/SprintSlayer.postman_collection.json) | Ready-to-import Postman collection with all routes & environments |
 
 ---
@@ -250,8 +252,8 @@ npm run test:task     # Task management and project ownership tests
 
 ## 🔌 API Reference Overview
 
-Base API Endpoint: `http://localhost:5000/api` (Local) or `https://sprintslayer-app.up.railway.app/api` (Production)  
-Full interactive documentation is accessible live at [/api-docs](https://sprintslayer-app.up.railway.app/api-docs).
+Base API Endpoint: `http://localhost:5000/api` (Local) or `https://sprintslayer-production.up.railway.app/api` (Production)  
+Full interactive documentation is accessible live at [/api-docs](https://sprintslayer-production.up.railway.app/api-docs).
 
 ### Authentication Endpoints (`/api/auth`)
 
