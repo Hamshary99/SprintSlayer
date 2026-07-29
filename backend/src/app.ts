@@ -12,15 +12,20 @@ export class AppRoutes {
         const router = express.Router();
 
         // CORS, Body parsing & cookies
+        const allowedOrigin = (env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
         router.use(cors({
             origin: (origin, callback) => {
+                // Allow tools with no origin (like Postman or server-to-server)
                 if (!origin) return callback(null, true);
-                const allowed = (env.FRONTEND_URL || '').replace(/\/$/, '');
-                const incoming = origin.replace(/\/$/, '');
-                if (!allowed || incoming === allowed || process.env.NODE_ENV !== 'production') {
+
+                const cleanOrigin = origin.replace(/\/$/, '');
+                
+                // Allow exact FRONTEND_URL or local dev
+                if (cleanOrigin === allowedOrigin || process.env.NODE_ENV !== 'production') {
                     return callback(null, origin);
                 }
-                return callback(null, origin);
+
+                return callback(new Error('Not allowed by CORS'));
             },
             credentials: true,
         }));
