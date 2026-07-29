@@ -67,6 +67,7 @@ This project strictly satisfies **100% of core requirements** and completes **al
 | | API Documentation | ✅ | Live Swagger UI (`/api-docs`) + OpenAPI 3.0 specification + Postman Collection file. |
 | | Real-Time Sockets | ✅ | Socket.IO connection manager & real-time event pipeline architecture (`task:created`, `task:updated`, `task:deleted`). |
 | | Pagination & Search | ✅ | Standardized pagination (`page`, `limit`) across Users, Projects, Project Members, and Tasks. |
+| | Priority Audit Logging | ✅ | Lightweight, low-footprint audit system categorizing events into `HIGH`, `MEDIUM`, `LOW` priorities. Simultaneously streams to gitignored `backend/logs/audit.log` and persists to `audit_logs` DB table with Admin query endpoint (`GET /api/audit-logs`). |
 | | Live Deployment | ✅ | Public deployment live on Railway with `trust proxy` configured for HTTPS cookie security. |
 
 ---
@@ -241,11 +242,12 @@ npm run test:auth     # Auth service, controller, and route tests
 npm run test:user     # User CRUD and soft-delete tests
 npm run test:project  # Project membership and authorization tests
 npm run test:task     # Task management and project ownership tests
+npm run test:audit    # Priority audit log mechanism tests
 ```
 
 ### Test Coverage Summary:
-- **10 Test Suites**
-- **135+ Test Cases**
+- **11 Test Suites**
+- **141 Test Cases**
 - **100% Pass Rate**
 
 ---
@@ -299,6 +301,12 @@ Full interactive documentation is accessible live at [/api-docs](https://sprints
 | `PATCH` | `/task/:id` | Required | Project Owner | Update task details or status |
 | `DELETE` | `/task/:id` | Required | Project Owner | Delete task |
 
+### Audit Log Endpoints (`/api/audit-logs`)
+
+| Method | Endpoint | Auth | Required Role | Description |
+|---|---|---|---|---|
+| `GET` | `/audit-logs` | Required | Admin | Get priority audit logs (supports `page`, `limit`, `priority`, `action`, `userId`) |
+
 ---
 
 ## 🛠️ Project Directory Structure
@@ -325,7 +333,8 @@ SprintSlayer/
 │   │   │   ├── auth/                             # Auth routes, controllers, services, DTOs
 │   │   │   ├── users/                            # User domain logic & schemas
 │   │   │   ├── projects/                         # Project & member management domain
-│   │   │   └── tasks/                            # Task management, search & filters domain
+│   │   │   ├── tasks/                            # Task management, search & filters domain
+│   │   │   └── audit/                            # Priority audit log domain & schemas
 │   │   ├── seeds/
 │   │   │   ├── seed.users.ts                     # User database seeder
 │   │   │   └── seed.projects.ts                  # Project & Task database seeder
