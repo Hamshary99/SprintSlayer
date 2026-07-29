@@ -17,7 +17,7 @@
     "test:integration:task": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/tasks/integration/",
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "drizzle-kit push && node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:rollback": "drizzle-kit undo",
