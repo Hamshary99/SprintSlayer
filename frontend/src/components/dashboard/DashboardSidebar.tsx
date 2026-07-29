@@ -1,5 +1,9 @@
 import { LayoutGrid } from "lucide-react";
+import { useState } from "react";
 import type { User } from "@/types";
+import { useAuth } from "@/context/AuthContext";
+import { userService } from "@/services/user.service";
+import { EditProfileModal } from "@/components/users/EditProfileModal";
 
 interface DashboardSidebarProps {
   readonly user: User | null;
@@ -7,6 +11,14 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({ user, onLogout }: DashboardSidebarProps) {
+  const { updateUser } = useAuth();
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+
+  const handleUpdateProfile = async (id: number, data: { name: string; email: string }) => {
+    const res = await userService.update(id, data);
+    updateUser(res.data.user);
+  };
+
   return (
     <aside className="w-64 border-r border-slate-800 bg-slate-900/50 flex flex-col">
       <div className="p-5 border-b border-slate-800">
@@ -29,17 +41,21 @@ export function DashboardSidebar({ user, onLogout }: DashboardSidebarProps) {
       </nav>
 
       <div className="p-4 border-t border-slate-800">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">
+        <button
+          type="button"
+          onClick={() => setIsEditProfileOpen(true)}
+          className="flex items-center gap-3 mb-3 w-full text-left rounded-lg p-1.5 transition hover:bg-slate-800 group"
+        >
+          <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white group-hover:ring-2 group-hover:ring-indigo-400 transition-all">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-white font-medium truncate">
+            <p className="text-sm text-white font-medium truncate group-hover:text-indigo-300 transition-colors">
               {user?.name}
             </p>
             <p className="text-xs text-slate-500 truncate">{user?.email}</p>
           </div>
-        </div>
+        </button>
         <button
           type="button"
           onClick={() => void onLogout()}
@@ -48,6 +64,15 @@ export function DashboardSidebar({ user, onLogout }: DashboardSidebarProps) {
           Sign out
         </button>
       </div>
+
+      {user && (
+        <EditProfileModal
+          user={user}
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          onSave={handleUpdateProfile}
+        />
+      )}
     </aside>
   );
 }
