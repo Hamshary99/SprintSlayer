@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { projectService } from "@/services/project.service";
 import { taskService } from "@/services/task.service";
 import { userService } from "@/services/user.service";
-import { socketService } from "@/services/socket.service";
 import { useAuth } from "@/context/AuthContext";
 import type {
   Project,
@@ -141,49 +140,6 @@ export default function ProjectDetailsPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [projectId]);
-
-  /* ── Real-Time Socket.IO Listeners ───────────────────────────────────── */
-
-  useEffect(() => {
-    if (!Number.isInteger(projectId) || projectId <= 0) return;
-
-    const socket = socketService.connect();
-    socket.emit("join_project", projectId);
-
-    const handleTaskCreated = (newTask: Task) => {
-      if (Number(newTask.projectId) === projectId) {
-        setTasks((prev) => {
-          if (prev.some((t) => t.id === newTask.id)) return prev;
-          return [newTask, ...prev];
-        });
-      }
-    };
-
-    const handleTaskUpdated = (updatedTask: Task) => {
-      if (Number(updatedTask.projectId) === projectId) {
-        setTasks((prev) =>
-          prev.map((t) => (t.id === updatedTask.id ? { ...t, ...updatedTask } : t))
-        );
-      }
-    };
-
-    const handleTaskDeleted = ({ id, projectId: pId }: { id: number; projectId: number }) => {
-      if (Number(pId) === projectId) {
-        setTasks((prev) => prev.filter((t) => t.id !== id));
-      }
-    };
-
-    socket.on("task:created", handleTaskCreated);
-    socket.on("task:updated", handleTaskUpdated);
-    socket.on("task:deleted", handleTaskDeleted);
-
-    return () => {
-      socket.emit("leave_project", projectId);
-      socket.off("task:created", handleTaskCreated);
-      socket.off("task:updated", handleTaskUpdated);
-      socket.off("task:deleted", handleTaskDeleted);
-    };
   }, [projectId]);
 
   /* ── Toast auto-dismiss ──────────────────────────────────────────────── */
