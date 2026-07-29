@@ -23,7 +23,6 @@ export class AppRoutes {
 
                 const cleanOrigin = origin.replace(/\/$/, '');
                 
-                // Allow exact FRONTEND_URL, local dev, or fallback
                 if (!allowedOrigin || cleanOrigin === allowedOrigin || process.env.NODE_ENV !== 'production') {
                     return callback(null, origin);
                 }
@@ -31,6 +30,8 @@ export class AppRoutes {
                 return callback(null, origin);
             },
             credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
         }));
         router.use(express.json());
         router.use(cookieParser());
