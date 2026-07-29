@@ -13,13 +13,21 @@ import { Pool } from 'pg';
 import { users } from '../modules/users/schemas/user.schema.js';
 
 // ─── DB Connection ────────────────────────────────────────────────────────────
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT) || 5432,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+const isProduction = process.env.NODE_ENV === 'production';
+
+const pool = connectionString
+  ? new Pool({
+      connectionString,
+      ssl: isProduction || connectionString.includes('sslmode=require') ? { rejectUnauthorized: false } : false,
+    })
+  : new Pool({
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT) || 5432,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+    });
 
 const db = drizzle({ client: pool });
 
