@@ -8,6 +8,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"member" | "admin">("member");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      await register(email, password, name);
+      await register(email, password, name, role);
       navigate("/");
     } catch (err: unknown) {
       const msg =
@@ -69,6 +70,34 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Account Type</label>
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-900/80 rounded-lg border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setRole("member")}
+                  className={`py-2 text-sm font-medium rounded-md transition ${
+                    role === "member"
+                      ? "bg-indigo-600 text-white shadow-xs"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  Member
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("admin")}
+                  className={`py-2 text-sm font-medium rounded-md transition ${
+                    role === "admin"
+                      ? "bg-indigo-600 text-white shadow-xs"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  Admin
+                </button>
+              </div>
+            </div>
+
             <div>
               <label htmlFor="register-name" className="block text-sm font-medium text-slate-300 mb-2">Full name</label>
               <input

@@ -14,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string, role?: 'admin' | 'member') => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
 }
@@ -39,11 +39,12 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     setUser(res.data.user);
   }, []);
 
-  const register = useCallback(async (email: string, password: string, name: string) => {
+  const register = useCallback(async (email: string, password: string, name: string, role?: 'admin' | 'member') => {
     const res = await authService.register({
       email,
       passwordHash: password,
       name,
+      role,
     });
     setUser(res.data.user);
   }, []);
