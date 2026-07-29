@@ -32,9 +32,8 @@ The production database on Railway and local seed scripts are pre-loaded with **
 | Role | Email | Password | Access Capabilities |
 | :--- | :--- | :--- | :--- |
 | 👑 **Admin** | `liam.smith1@gmail.com` | `Password123!` | Full admin rights: Create projects, assign members, create/edit/delete tasks across projects |
-| 👑 **Admin (Secondary)** | `emma.johnson2@gmail.com` | `Password123!` | Secondary admin account for multi-admin project ownership testing |
 | 👤 **Member** | `sophia.brown6@gmail.com` | `Password123!` | Standard user: Access assigned projects/tasks, update status, view project boards |
-| 👤 **Member (Secondary)** | `aiden.jones7@gmail.com` | `Password123!` | Second member account for testing team interactions & project memberships |
+
 
 ---
 
