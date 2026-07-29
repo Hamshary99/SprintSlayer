@@ -7,6 +7,7 @@ import type {
 } from "../dto/project.dto.js";
 import { AppError } from "../../../common/error/AppError.js";
 import { UserRepository } from "../../users/repositories/user.repository.js";
+import { auditLogService } from "../../audit/controllers/audit.controller.js";
 
 export class ProjectService {
   private projectRepository = new ProjectRepository();
@@ -70,6 +71,14 @@ export class ProjectService {
         projectId: newProject[0].id,
         userId: project.ownerId,
     });
+
+    auditLogService.log({
+        priority: "MEDIUM",
+        action: "PROJECT_CREATE",
+        userId: project.ownerId,
+        details: JSON.stringify({ projectId: newProject[0].id, title: newProject[0].title }),
+    });
+
     return newProject;
   }
 

@@ -9,6 +9,7 @@
     "test:auth": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/auth/unit/",
     "test:project": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/projects/unit/",
     "test:task": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/tasks/unit/",
+    "test:audit": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/audit/",
     "test:integration": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=integration/",
     "test:integration:auth": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/auth/integration/",
     "test:integration:project": "set NODE_OPTIONS=--experimental-vm-modules&& npx jest --verbose --testPathPatterns=tests/projects/integration/",

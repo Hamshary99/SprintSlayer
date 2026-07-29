@@ -2,6 +2,7 @@ import { TaskRepository, TaskSortField, SortOrder } from "../repositories/task.r
 import { CreateTaskDto, UpdateTaskDto } from "../dto/task.dto.js";
 import { ProjectRepository } from "../../projects/repositories/project.repository.js";
 import { AppError } from "../../../common/error/AppError.js";
+import { auditLogService } from "../../audit/controllers/audit.controller.js";
 
 export class TaskService {
     private taskRepository = new TaskRepository();
@@ -17,7 +18,7 @@ export class TaskService {
      */
     private async checkProjectAccess(requesterId: number, projectId: number) {
         const projectRes = await this.projectRepository.getProjectById(projectId);
-        const project = projectRes[0];
+        const project = projectRes ? projectRes[0] : undefined;
         if (!project) throw new AppError("Project not found", 404);
 
         // Project owner always has access
@@ -28,7 +29,7 @@ export class TaskService {
             projectId,
             requesterId,
         );
-        if (memberRes.length === 0) {
+        if (!memberRes || memberRes.length === 0) {
             throw new AppError("You are not authorized to manage tasks in this project", 403);
         }
     }
@@ -39,17 +40,37 @@ export class TaskService {
         await this.checkProjectAccess(requesterId, taskData.projectId);
         // creatorId is always the authenticated user — never trust the client body
         taskData.creatorId = requesterId;
-        return this.taskRepository.createTask(taskData);
+        const newTask = await this.taskRepository.createTask(taskData);
+
+        auditLogService.log({
+            priority: "MEDIUM",
+            action: "TASK_CREATE",
+            userId: requesterId,
+            details: JSON.stringify({ taskId: newTask[0]?.id, title: newTask[0]?.title, status: newTask[0]?.status, projectId: taskData.projectId }),
+        });
+
+        return newTask;
     }
 
     async updateTask(requesterId: number, taskId: number, taskData: UpdateTaskDto) {
         const taskRes = await this.taskRepository.getTaskById(taskId);
-        const task = taskRes[0];
+        const task = taskRes ? taskRes[0] : undefined;
         if (!task) throw new AppError("Task not found", 404);
 
         await this.checkProjectAccess(requesterId, task.projectId);
 
-        return this.taskRepository.updateTask(taskId, taskData);
+        const updated = await this.taskRepository.updateTask(taskId, taskData);
+
+        if (taskData.status && taskData.status !== task.status) {
+            auditLogService.log({
+                priority: "MEDIUM",
+                action: "TASK_STATUS_UPDATE",
+                userId: requesterId,
+                details: JSON.stringify({ taskId, oldStatus: task.status, newStatus: taskData.status, projectId: task.projectId }),
+            });
+        }
+
+        return updated;
     }
 
     async deleteTask(requesterId: number, taskId: number) {

@@ -90,7 +90,7 @@ describe("TaskService.createTask()", () => {
         const input = { title: "Test Task", projectId: 1 } as any;
         
         await expect(service.createTask(input, 101)).rejects.toThrow(
-            new AppError("You are not the owner of this project", 403)
+            new AppError("You are not authorized to manage tasks in this project", 403)
         );
         expect(mockTaskRepo.createTask).not.toHaveBeenCalled();
     });
@@ -130,7 +130,7 @@ describe("TaskService.updateTask()", () => {
         mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]); // ownerId = 100
 
         await expect(service.updateTask(101, 10, { title: "Updated" } as any)).rejects.toThrow(
-            new AppError("You are not the owner of this project", 403)
+            new AppError("You are not authorized to manage tasks in this project", 403)
         );
     });
 });
@@ -151,7 +151,7 @@ describe("TaskService.deleteTask()", () => {
         mockProjectRepo.getProjectById.mockResolvedValue([FAKE_PROJECT]);
 
         await expect(service.deleteTask(101, 10)).rejects.toThrow(
-            new AppError("You are not the owner of this project", 403)
+            new AppError("You are not authorized to manage tasks in this project", 403)
         );
     });
 });
@@ -180,7 +180,7 @@ describe("TaskService.getTaskById()", () => {
         mockProjectRepo.getProjectMemberByProjectIdAndUserId.mockResolvedValue([]); // No membership
 
         await expect(service.getTaskById(102, 10, false)).rejects.toThrow(
-            new AppError("You are not a member of this project", 403)
+            new AppError("You are not authorized to manage tasks in this project", 403)
         );
     });
 });

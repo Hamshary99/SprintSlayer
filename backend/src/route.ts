@@ -1,7 +1,8 @@
 import authRoutes from './modules/auth/routes/auth.route.js';
 import userRoutes from './modules/users/routes/user.route.js';
-import projectRoutes from './modules/projects/routes/project.route.js'
+import projectRoutes from './modules/projects/routes/project.route.js';
 import taskRoutes from './modules/tasks/routes/task.route.js';
+import auditRoutes from './modules/audit/routes/audit.route.js';
 import { Router } from 'express';
 
 export class Routes {
@@ -19,6 +20,9 @@ export class Routes {
 
         // Task routes  — /api/task
         router.use('/task', taskRoutes);
+
+        // Audit log routes — /api/audit-logs
+        router.use('/audit-logs', auditRoutes);
 
         return router;
     }
