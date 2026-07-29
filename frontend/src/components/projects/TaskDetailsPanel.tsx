@@ -2,6 +2,7 @@ import type { Task, ProjectMember } from "@/types";
 import { getMemberColor } from "@/utils/ownerColors";
 import { PRIORITY_BADGE, STATUS_CONFIG } from "@/pages/ProjectDetailsPage";
 import { EditTaskModal } from "@/components/projects/EditTaskModal";
+import { DeleteTaskDialog } from "@/components/projects/DeleteTaskDialog";
 import { useState } from "react";
 
 interface TaskDetailsPanelProps {
@@ -9,12 +10,27 @@ interface TaskDetailsPanelProps {
   members: ProjectMember[];
   onClose: () => void;
   onUpdateTask?: (id: number, data: any) => Promise<void>;
+  onDeleteTask?: (id: number) => Promise<void>;
 }
 
-export function TaskDetailsPanel({ task, members, onClose, onUpdateTask }: TaskDetailsPanelProps) {
+export function TaskDetailsPanel({ task, members, onClose, onUpdateTask, onDeleteTask }: TaskDetailsPanelProps) {
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!task) return null;
+
+  const handleDelete = async () => {
+    if (!onDeleteTask) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteTask(task.id);
+      setShowDeleteDialog(false);
+      onClose(); // Close the panel on success
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -41,6 +57,18 @@ export function TaskDetailsPanel({ task, members, onClose, onUpdateTask }: TaskD
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
+            {onDeleteTask && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteDialog(true)}
+                className="rounded-lg p-1.5 text-red-400/80 transition hover:bg-red-500/10 hover:text-red-400 ml-1"
+                title="Delete Task"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>
             )}
@@ -127,6 +155,15 @@ export function TaskDetailsPanel({ task, members, onClose, onUpdateTask }: TaskD
           onClose={() => setShowEditTaskModal(false)}
           members={members}
           onSave={onUpdateTask}
+        />
+      )}
+
+      {showDeleteDialog && onDeleteTask && (
+        <DeleteTaskDialog
+          taskTitle={task.title}
+          onConfirm={handleDelete}
+          onClose={() => setShowDeleteDialog(false)}
+          isDeleting={isDeleting}
         />
       )}
     </div>

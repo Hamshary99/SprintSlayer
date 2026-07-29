@@ -287,6 +287,19 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      await taskService.delete(taskId);
+      setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+      if (selectedTask?.id === taskId) {
+        setSelectedTask(null);
+      }
+      showToast("Task deleted successfully", "success");
+    } catch (err: any) {
+      showToast(err?.response?.data?.message || "Failed to delete task");
+    }
+  };
+
   /* ── Delete & Edit project ────────────────────────────────────────────── */
 
   const navigate = useNavigate();
@@ -584,8 +597,11 @@ export default function ProjectDetailsPage() {
                       </div>
                     ))}
                     {columnTasks.length === 0 && (
-                      <div className="rounded-lg border border-dashed border-slate-800 p-6 text-center">
-                        <p className="text-xs text-slate-600">No tasks</p>
+                      <div className="rounded-lg border border-dashed border-slate-800 p-8 text-center flex flex-col items-center justify-center">
+                        <svg className="w-8 h-8 text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p className="text-xs text-slate-500 font-medium">No tasks yet</p>
                       </div>
                     )}
                     {isAdmin && (
@@ -649,6 +665,7 @@ export default function ProjectDetailsPage() {
         members={members}
         onClose={() => setSelectedTask(null)}
         onUpdateTask={handleUpdateTask}
+        onDeleteTask={isAdmin ? handleDeleteTask : undefined}
       />
 
       {/* ═══════════════════════════════════════════════════════════════════
