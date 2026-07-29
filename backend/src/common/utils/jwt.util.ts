@@ -42,10 +42,11 @@ export function verifyRefreshToken(token: string): JwtPayload {
 }
 
 export const setAccessTokenCookie = (res: Response, token: string, options?: SetCookiesOptions) => {
+    const isProd = env.NODE_ENV === "production" || env.NODE_ENV === "prod" || env.NODE_ENV === "staging";
     const defaultOptions: SetCookiesOptions = {
-        httpOnly: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
-        secure: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
-        sameSite: "lax",
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: env.ACCESS_COOKIES_EXPIRE
     }
     const cookieOptions = { ...defaultOptions, ...options };
@@ -53,10 +54,11 @@ export const setAccessTokenCookie = (res: Response, token: string, options?: Set
 }
 
 export const setRefreshTokenCookie = (res: Response, token: string, options?: SetCookiesOptions) => {
+    const isProd = env.NODE_ENV === "production" || env.NODE_ENV === "prod" || env.NODE_ENV === "staging";
     const defaultOptions: SetCookiesOptions = {
-        httpOnly: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
-        secure: env.NODE_ENV === "prod" || env.NODE_ENV === "staging",
-        sameSite: "strict",
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: env.REFRESH_COOKIES_EXPIRE
     }
     const cookieOptions = { ...defaultOptions, ...options };

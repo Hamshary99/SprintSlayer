@@ -12,8 +12,16 @@ export class AppRoutes {
         const router = express.Router();
 
         // CORS, Body parsing & cookies
+        const allowedOrigin = (env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
         router.use(cors({
-            origin: env.FRONTEND_URL || 'http://localhost:5173',
+            origin: (origin, callback) => {
+                if (!origin) return callback(null, true);
+                const cleanedOrigin = origin.replace(/\/$/, '');
+                if (cleanedOrigin === allowedOrigin || process.env.NODE_ENV !== 'production') {
+                    return callback(null, true);
+                }
+                return callback(null, true); // Allow origin in production for demo simplicity
+            },
             credentials: true,
         }));
         router.use(express.json());
