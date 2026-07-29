@@ -111,7 +111,7 @@ export class ProjectService {
     // 1. Check if project exists
     const existingProject = await this.projectRepository.getProjectById(projectId);
     if (existingProject.length === 0) {
-      return [];
+      throw new AppError("Project not found", 404);
     }
 
     // Only the admin owner can delete the project
@@ -171,19 +171,11 @@ export class ProjectService {
     sortOrder?: SortOrder,
     search?: string,
   ) {
-    const args: any[] = [page, limit];
-    if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
-      args.push(sortBy, sortOrder);
-      if (search !== undefined) {
-        args.push(search);
-      }
-    }
-
     // Admins see all projects
     if (await this.isAdmin(requesterId)) {
-      return (this.projectRepository.getAllProjects as any)(...args);
+      return this.projectRepository.getAllProjects(page, limit, sortBy, sortOrder, search);
     }
-    return (this.projectRepository.getProjectsByMemberId as any)(requesterId, ...args);
+    return this.projectRepository.getProjectsByMemberId(requesterId, page, limit, sortBy, sortOrder, search);
   }
 
   async getMembersOfProject(projectId: number, requesterId: number, page = 1, limit = 10) {

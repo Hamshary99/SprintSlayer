@@ -1,15 +1,21 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import { errorHandler } from './common/middlewares/errorHandler.js';
 import { Routes } from './route.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.config.js';
+import { env } from './config/env.config.js';
 
 export class AppRoutes {
     static routes(): express.Router {
         const router = express.Router();
 
-        // Body parsing & cookies
+        // CORS, Body parsing & cookies
+        router.use(cors({
+            origin: env.FRONTEND_URL || 'http://localhost:5173',
+            credentials: true,
+        }));
         router.use(express.json());
         router.use(cookieParser());
 

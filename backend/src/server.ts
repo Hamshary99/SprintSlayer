@@ -15,7 +15,7 @@ async function bootstrap() {
     app.listen(env.PORT, () => {
         console.log(`Server running on http://localhost:${env.PORT}`);
         console.log(`Swagger Docs: http://localhost:${env.PORT}/api-docs`);
-        console.log(`Health check: http://localhost:${env.PORT}/api/health`);
+        console.log(`Health check: http://localhost:${env.PORT}/health`);
     });
 }
 

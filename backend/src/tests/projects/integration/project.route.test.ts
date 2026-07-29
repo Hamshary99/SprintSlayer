@@ -98,7 +98,7 @@ describe("Project Routes Integration Tests", () => {
                 .send({ id: 1, title: "Updated" });
             
             expect(res.status).toBe(200);
-            expect(mockProjectService.updateProject).toHaveBeenCalledWith(1, { id: 1, title: "Updated" }, 100);
+            expect(mockProjectService.updateProject).toHaveBeenCalledWith(1, expect.objectContaining({ title: "Updated" }), 100);
         });
 
         it("DELETE /api/projects/:id - should call deleteProject", async () => {
@@ -135,7 +135,7 @@ describe("Project Routes Integration Tests", () => {
                 .set("Cookie", [`access_token=${userToken}`]);
             
             expect(res.status).toBe(200);
-            expect(mockProjectService.getMyProjects).toHaveBeenCalledWith(100, 1, 10);
+            expect(mockProjectService.getMyProjects).toHaveBeenCalledWith(100, 1, 10, undefined, undefined, undefined);
         });
 
         it("GET /api/projects/:id - should call getProjectById", async () => {

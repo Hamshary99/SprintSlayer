@@ -559,15 +559,24 @@ describe("ProjectService.deleteProject()", () => {
     expect(mockProjectRepo.deleteProject).toHaveBeenCalledWith(10);
   });
 
-  it("21 — should return empty array when project does not exist (early return)", async () => {
+  it("21 — should throw 404 when project does not exist", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([]);
 
     const input = 9999;
-    const result = await service.deleteProject(input, 1);
+    let error: unknown;
+    try {
+      await service.deleteProject(input, 1);
+    } catch (e) {
+      error = e;
+    }
 
-    logIO("deleteProject — project not found (early return)", input, result);
+    logIO("deleteProject — project not found", input, {
+      error: (error as Error)?.message,
+      statusCode: (error as any)?.statusCode,
+    });
 
-    expect(result).toEqual([]);
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as any).statusCode).toBe(404);
     expect(mockProjectRepo.deleteProject).not.toHaveBeenCalled();
   });
 
@@ -614,15 +623,24 @@ describe("ProjectService.deleteProject()", () => {
     expect((error as Error).message).toBe("You are not the owner of this project");
   });
 
-  it("24 — should return empty array when deleting with id=999999", async () => {
+  it("24 — should throw 404 when deleting with id=999999", async () => {
     mockProjectRepo.getProjectById.mockResolvedValue([]);
 
     const input = 999999;
-    const result = await service.deleteProject(input, 1);
+    let error: unknown;
+    try {
+      await service.deleteProject(input, 1);
+    } catch (e) {
+      error = e;
+    }
 
-    logIO("deleteProject — very large non-existent id", input, result);
+    logIO("deleteProject — very large non-existent id", input, {
+      error: (error as Error)?.message,
+      statusCode: (error as any)?.statusCode,
+    });
 
-    expect(result).toEqual([]);
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as any).statusCode).toBe(404);
     expect(mockProjectRepo.deleteProject).not.toHaveBeenCalled();
   });
 });
@@ -840,7 +858,7 @@ describe("ProjectService.getMyProjects()", () => {
     logIO("getMyProjects — member user", { requesterId: 2, page: 1, limit: 10 }, result);
 
     expect(result).toHaveLength(2);
-    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10, undefined, undefined, undefined);
     expect(mockProjectRepo.getAllProjects).not.toHaveBeenCalled();
   });
 
@@ -858,7 +876,7 @@ describe("ProjectService.getMyProjects()", () => {
     logIO("getMyProjects — admin sees all", { requesterId: 1, page: 1, limit: 10 }, result);
 
     expect(result).toHaveLength(3);
-    expect(mockProjectRepo.getAllProjects).toHaveBeenCalledWith(1, 10);
+    expect(mockProjectRepo.getAllProjects).toHaveBeenCalledWith(1, 10, undefined, undefined, undefined);
     expect(mockProjectRepo.getProjectsByMemberId).not.toHaveBeenCalled();
   });
 
@@ -881,7 +899,7 @@ describe("ProjectService.getMyProjects()", () => {
 
     logIO("getMyProjects — default pagination", { requesterId: 2 }, "void");
 
-    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10);
+    expect(mockProjectRepo.getProjectsByMemberId).toHaveBeenCalledWith(2, 1, 10, undefined, undefined, undefined);
   });
 
   it("37c — should pass sortBy, sortOrder, and search params to repo", async () => {

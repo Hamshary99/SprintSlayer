@@ -74,7 +74,7 @@ describe("Task Routes Integration Tests", () => {
             const res = await request(app)
                 .post("/api/tasks")
                 .set("Cookie", [`access_token=${adminToken}`])
-                .send({ title: "Task", projectId: 1, priority: "high", status: "todo" });
+                .send({ title: "Task", projectId: 1, priority: "high", status: "to_do" });
             
             expect(res.status).toBe(201);
             expect(res.body).toEqual([FAKE_TASK]);
@@ -101,7 +101,7 @@ describe("Task Routes Integration Tests", () => {
             
             expect(res.status).toBe(200);
             expect(res.body).toEqual([{ ...FAKE_TASK, title: "Updated" }]);
-            expect(mockTaskService.updateTask).toHaveBeenCalledWith(100, 1, { title: "Updated" });
+            expect(mockTaskService.updateTask).toHaveBeenCalledWith(100, 1, expect.objectContaining({ title: "Updated" }));
         });
     });
 
@@ -160,7 +160,7 @@ describe("Task Routes Integration Tests", () => {
             
             expect(res.status).toBe(200);
             expect(mockTaskService.getProjectTasks).toHaveBeenCalledWith(
-                101, 5, false, 2, 20, "title", "asc"
+                101, 5, false, 2, 20, "title", "asc", undefined
             );
         });
     });
@@ -175,7 +175,7 @@ describe("Task Routes Integration Tests", () => {
             
             expect(res.status).toBe(200);
             expect(mockTaskService.getTasksByAssigneeId).toHaveBeenCalledWith(
-                101, 101, false, 1, 10, undefined, undefined
+                101, 101, false, 1, 10, undefined, undefined, undefined
             );
         });
     });

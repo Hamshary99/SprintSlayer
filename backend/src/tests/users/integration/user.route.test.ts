@@ -68,7 +68,7 @@ describe("User Routes Integration Tests", () => {
                 .set("Cookie", [`access_token=${memberToken}`]);
             
             expect(res.status).toBe(200);
-            expect(mockUserService.findAll).toHaveBeenCalledWith(1, 10, undefined);
+            expect(mockUserService.findAll).toHaveBeenCalledWith(1, 10, undefined, undefined, undefined, undefined);
         });
     });
 

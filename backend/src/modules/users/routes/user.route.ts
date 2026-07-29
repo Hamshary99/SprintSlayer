@@ -8,6 +8,7 @@ const router = Router();
 router.get("/", requireAuth, userController.getAll);
 router.get("/:id", requireAuth, userController.getById);
 router.patch("/:id", requireAuth, userController.updateUser);
+router.patch("/:id/password", requireAuth, userController.updatePassword);
 router.delete("/:id", requireAuth, userController.deleteUser);
 
 export default router;

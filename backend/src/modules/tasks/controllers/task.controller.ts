@@ -1,5 +1,7 @@
 import { taskService, TaskService } from "../services/task.service.js";
 import { Request, Response, NextFunction } from "express";
+import { validateBody } from "../../../common/utils/validator.js";
+import { CreateTaskDto, UpdateTaskDto } from "../dto/task.dto.js";
 
 export class TaskController {
     constructor(private readonly taskService: TaskService) {}
@@ -7,8 +9,8 @@ export class TaskController {
     createTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // Always derive creatorId from the authenticated session, never from req.body
-            req.body.creatorId = req.user!.id;
-            const task = await this.taskService.createTask(req.body, req.user!.id);
+            const data = await validateBody(CreateTaskDto, { ...req.body, creatorId: req.user!.id });
+            const task = await this.taskService.createTask(data, req.user!.id);
             res.status(201).json(task);
         } catch (err) {
             next(err);
@@ -18,7 +20,8 @@ export class TaskController {
     updateTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const taskId = Number(req.params.id ?? req.body.id);
-            const task = await this.taskService.updateTask(req.user!.id, taskId, req.body);
+            const data = await validateBody(UpdateTaskDto, req.body);
+            const task = await this.taskService.updateTask(req.user!.id, taskId, data);
             res.json(task);
         } catch (err) {
             next(err);
@@ -56,12 +59,16 @@ export class TaskController {
             const search = req.query.search as string;
             const isAdmin = req.user!.role === "admin";
 
-            const args: any[] = [req.user!.id, projectId, isAdmin, page, limit, sortBy, sortOrder];
-            if (search !== undefined) {
-                args.push(search);
-            }
-
-            const tasks = await (this.taskService.getProjectTasks as any)(...args);
+            const tasks = await this.taskService.getProjectTasks(
+                req.user!.id,
+                projectId,
+                isAdmin,
+                page,
+                limit,
+                sortBy,
+                sortOrder,
+                search,
+            );
             res.json(tasks);
         } catch (err) {
             next(err);
@@ -78,12 +85,16 @@ export class TaskController {
             const search = req.query.search as string;
             const isAdmin = req.user!.role === "admin";
 
-            const args: any[] = [req.user!.id, assigneeId, isAdmin, page, limit, sortBy, sortOrder];
-            if (search !== undefined) {
-                args.push(search);
-            }
-
-            const tasks = await (this.taskService.getTasksByAssigneeId as any)(...args);
+            const tasks = await this.taskService.getTasksByAssigneeId(
+                req.user!.id,
+                assigneeId,
+                isAdmin,
+                page,
+                limit,
+                sortBy,
+                sortOrder,
+                search,
+            );
             res.json(tasks);
         } catch (err) {
             next(err);

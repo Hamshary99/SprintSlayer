@@ -11,7 +11,7 @@ export const users = pgTable('users', {
   active: boolean('active').default(true).notNull(),
   refreshToken: varchar('refresh_token', { length: 255 }).unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => {
   return {
     activeIdx: index('idx_users_active').on(table.active),

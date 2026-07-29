@@ -1,5 +1,7 @@
 import { projectService, ProjectService } from "../services/project.service.js";
 import { Request, Response, NextFunction } from "express";
+import { validateBody } from "../../../common/utils/validator.js";
+import { CreateProjectDto, UpdateProjectDto, AddProjectMemberDto, RemoveProjectMemberDto } from "../dto/project.dto.js";
 
 class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
@@ -7,10 +9,8 @@ class ProjectController {
   createProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const ownerId = req.body.ownerId || req.user!.id;
-      const body = {title: req.body.title, description: req.body.description, ownerId}
-      const project = await this.projectService.createProject(
-        body
-      );
+      const data = await validateBody(CreateProjectDto, { ...req.body, ownerId });
+      const project = await this.projectService.createProject(data);
       res.json(project);
     } catch (err) {
       next(err);
@@ -19,7 +19,7 @@ class ProjectController {
 
   addMemberToProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const payload = { ...req.body, projectId: Number(req.params.projectId) };
+      const payload = await validateBody(AddProjectMemberDto, { ...req.body, projectId: Number(req.params.projectId) });
       const projectMember = await this.projectService.addMemberToProject(
         payload,
         req.user!.id,
@@ -32,9 +32,10 @@ class ProjectController {
 
   updateProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const data = await validateBody(UpdateProjectDto, req.body);
       const project = await this.projectService.updateProject(
         Number(req.params.id),
-        req.body,
+        data,
         req.user!.id,
       );
       res.json(project);
@@ -61,7 +62,7 @@ class ProjectController {
     next: NextFunction,
   ) => {
     try {
-      const payload = { ...req.body, projectId: Number(req.params.projectId) };
+      const payload = await validateBody(RemoveProjectMemberDto, { ...req.body, projectId: Number(req.params.projectId) });
       const projectMember = await this.projectService.deleteMemberFromProject(
         payload,
         req.user!.id,
@@ -96,15 +97,14 @@ class ProjectController {
       const sortOrder = req.query.sortOrder as any;
       const search = req.query.search as string;
 
-      const args: any[] = [req.user!.id, page, limit];
-      if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
-        args.push(sortBy, sortOrder);
-        if (search !== undefined) {
-          args.push(search);
-        }
-      }
-
-      const projects = await (this.projectService.getMyProjects as any)(...args);
+      const projects = await this.projectService.getMyProjects(
+        req.user!.id,
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+        search,
+      );
       res.json(projects);
     } catch (err) {
       next(err);

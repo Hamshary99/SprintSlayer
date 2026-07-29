@@ -133,7 +133,13 @@ export class AuthController {
     }
 
     renderResetPasswordForm(req: Request, res: Response) {
-        const token = req.query.token as string || '';
+        const rawToken = (req.query.token as string) || '';
+        const token = rawToken
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
         res.setHeader('Content-Type', 'text/html');
         res.send(`
             <!DOCTYPE html>

@@ -7,7 +7,7 @@ export const project = pgTable('project', {
     description: varchar('description', { length: 1024 }),
     ownerId: integer('owner_id').notNull().references(() => users.id, {onDelete: 'cascade'}),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => {
     return {
         ownerIdIdx: index('idx_project_owner_id').on(table.ownerId),

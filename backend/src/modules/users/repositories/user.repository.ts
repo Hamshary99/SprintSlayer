@@ -1,4 +1,4 @@
-import { db } from "../../../db/db.js";
+import { db } from "../../../config/db.config.js";
 import { users } from "../schemas/user.schema.js";
 import { eq, and, asc, desc, ilike, or } from "drizzle-orm";
 import { CreateUserDto, UpdateUserDto } from "../dto/user.dto.js";
@@ -60,11 +60,11 @@ export class UserRepository {
     }
 
     async findByEmail(email: string) {
-        return db.select().from(users).where(eq(users.email, email));
+        return db.select().from(users).where(and(eq(users.email, email), eq(users.active, true)));
     }
 
-    async update(id: number, data: UpdateUserDto | { refreshToken: string | null }) {
-        return db.update(users).set(data).where(eq(users.id, id)).returning();
+    async update(id: number, data: UpdateUserDto | { refreshToken: string | null } | { passwordHash: string }) {
+        return db.update(users).set(data as any).where(eq(users.id, id)).returning();
     }
 
     async deleteUser(id: number) {
@@ -72,6 +72,6 @@ export class UserRepository {
     }
 
     async findUserByToken(refreshToken: string) {
-        return db.select().from(users).where(eq(users.refreshToken, refreshToken));
+        return db.select().from(users).where(and(eq(users.refreshToken, refreshToken), eq(users.active, true)));
     }
 }

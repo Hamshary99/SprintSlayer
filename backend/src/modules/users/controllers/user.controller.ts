@@ -1,7 +1,7 @@
 import { UserService, userService } from "../services/user.service.js";
 import { Request, Response, NextFunction } from "express";
 import { validateBody } from "../../../common/utils/validator.js";
-import { UpdateUserDto } from "../dto/user.dto.js";
+import { UpdateUserDto, UpdatePasswordDto } from "../dto/user.dto.js";
 import { AppError } from "../../../common/error/AppError.js";
 
 export class UserController {
@@ -14,27 +14,20 @@ export class UserController {
         this.getAll = this.getAll.bind(this);
         this.getById = this.getById.bind(this);
         this.updateUser = this.updateUser.bind(this);
+        this.updatePassword = this.updatePassword.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
     }
 
     async getAll(req: Request, res: Response, next: NextFunction) {
         try {
-            const page = parseInt(String(req.query.page), 10) || 1;
-            const limit = parseInt(String(req.query.limit), 10) || 10;
+            const page = Math.max(1, parseInt(String(req.query.page), 10) || 1);
+            const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit), 10) || 10));
             const role = req.query.role as string;
             const sortBy = req.query.sortBy as any;
             const sortOrder = req.query.sortOrder as any;
             const search = req.query.search as string;
 
-            const args: any[] = [page, limit, role];
-            if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
-                args.push(sortBy, sortOrder);
-                if (search !== undefined) {
-                    args.push(search);
-                }
-            }
-
-            const users = await (this.userService.findAll as any)(...args);
+            const users = await this.userService.findAll(page, limit, role, sortBy, sortOrder, search);
             res.status(200).json({ users });
         } catch (error) {
             next(error);
@@ -72,6 +65,24 @@ export class UserController {
             const updated = await this.userService.update(id, data);
 
             res.status(200).json({ user: updated });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updatePassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const id = parseInt(String(req.params.id), 10);
+            if (isNaN(id)) throw new AppError("Invalid user id", 400);
+
+            if (req.user?.id !== id && req.user?.role !== 'admin') {
+                throw new AppError("You are not allowed to update this user's password", 403);
+            }
+
+            const data = await validateBody(UpdatePasswordDto, req.body);
+            await this.userService.updatePassword(id, data);
+
+            res.status(200).json({ message: "Password updated successfully" });
         } catch (error) {
             next(error);
         }

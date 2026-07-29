@@ -66,3 +66,21 @@ export class UserLoginDto {
     @IsNotEmpty({ message: "Password is required"})
     passwordHash!: string;
 }
+
+export class UpdatePasswordDto {
+    @IsString()
+    @IsNotEmpty({ message: "Current password is required" })
+    currentPassword!: string;
+
+    @IsStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 0,
+    }, {
+        message: 'Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, and one number',
+    })
+    @IsNotEmpty({ message: "New password is required" })
+    newPassword!: string;
+}

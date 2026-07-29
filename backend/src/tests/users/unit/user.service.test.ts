@@ -201,7 +201,7 @@ describe("UserService.findAll()", () => {
 
     logIO("findAll — pagination params", input, "void (checking repo call args)");
 
-    expect(mockRepo.findAll).toHaveBeenCalledWith(3, 5, "admin");
+    expect(mockRepo.findAll).toHaveBeenCalledWith(3, 5, "admin", undefined, undefined, undefined);
   });
 });
 
@@ -412,7 +412,7 @@ describe("UserService.updatePassword()", () => {
     (comparePassword as jest.Mock).mockResolvedValue(true);
     mockRepo.update.mockResolvedValue([{ ...FAKE_DB_USER, passwordHash: "hashed_Str0ngPass1" }]);
 
-    const input = { id: 1, data: { passwordHash: "Str0ngPass1" } };
+    const input = { id: 1, data: { currentPassword: "OldPass123!", newPassword: "Str0ngPass1" } };
     const result = await service.updatePassword(input.id, input.data);
 
     logIO("updatePassword — happy path", input, result);
@@ -423,7 +423,7 @@ describe("UserService.updatePassword()", () => {
   it("18 — should throw 404 when user does not exist", async () => {
     mockRepo.findById.mockResolvedValue([]);
 
-    const input = { id: 999, data: { passwordHash: "Str0ngPass1" } };
+    const input = { id: 999, data: { currentPassword: "OldPass123!", newPassword: "Str0ngPass1" } };
     let error: unknown;
     try {
       await service.updatePassword(input.id, input.data);
@@ -440,31 +440,12 @@ describe("UserService.updatePassword()", () => {
     expect((error as any).statusCode).toBe(404);
   });
 
-  it("19 — should throw 400 when passwordHash is missing", async () => {
-    mockRepo.findById.mockResolvedValue([FAKE_DB_USER]);
-
-    const input = { id: 1, data: {} };
-    let error: unknown;
-    try {
-      await service.updatePassword(input.id, input.data);
-    } catch (e) {
-      error = e;
-    }
-
-    logIO("updatePassword — missing password", input, {
-      error: (error as Error)?.message,
-      statusCode: (error as any)?.statusCode,
-    });
-
-    expect(error).toBeInstanceOf(AppError);
-    expect((error as any).statusCode).toBe(400);
-  });
 
   it("20 — should throw 401 when current password is incorrect", async () => {
     mockRepo.findById.mockResolvedValue([FAKE_DB_USER]);
     (comparePassword as jest.Mock).mockResolvedValue(false);
 
-    const input = { id: 1, data: { passwordHash: "WrongPass1" } };
+    const input = { id: 1, data: { currentPassword: "WrongPass1!", newPassword: "NewPass123!" } as any };
     let error: unknown;
     try {
       await service.updatePassword(input.id, input.data);

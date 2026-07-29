@@ -1,5 +1,5 @@
 import { UserRepository, UserSortField, SortOrder } from "../repositories/user.repository.js";
-import { CreateUserDto, UpdateUserDto, UserLoginDto } from "../dto/user.dto.js";
+import { CreateUserDto, UpdateUserDto, UserLoginDto, UpdatePasswordDto } from "../dto/user.dto.js";
 import { hashPassword, comparePassword } from "../utils/password.hash.util.js";
 import { generateAccessToken, generateRefreshToken } from "../../../common/utils/jwt.util.js";
 import { AppError } from "../../../common/error/AppError.js";
@@ -54,18 +54,7 @@ export class UserService {
         sortOrder?: SortOrder,
         search?: string,
     ) {
-        const args: any[] = [page, limit];
-        if (role !== undefined || sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
-            args.push(role);
-            if (sortBy !== undefined || sortOrder !== undefined || search !== undefined) {
-                args.push(sortBy, sortOrder);
-                if (search !== undefined) {
-                    args.push(search);
-                }
-            }
-        }
-        // Hide Sensitive Data first
-        const users = await (this.userRepository.findAll as any)(...args);
+        const users = await this.userRepository.findAll(page, limit, role, sortBy, sortOrder, search);
         return users.map((user: any) => {
             const { passwordHash, refreshToken, ...userData } = user;
             return userData;
@@ -142,26 +131,21 @@ export class UserService {
         return userData;
     }
 
-    async updatePassword(id: number, data: UpdateUserDto) {
+    async updatePassword(id: number, data: UpdatePasswordDto) {
         // 1. Check if User exists
         const existingUser = await this.userRepository.findById(id);
         if (existingUser.length === 0) {
             throw new AppError("User not found", 404);
         }
 
-        // 2. Ensure new password is provided
-        if (!data.passwordHash) {
-            throw new AppError("Password is required to update password", 400);
-        }
-
-        // 3. Verify current password
-        const match = await comparePassword(data.passwordHash, existingUser[0].passwordHash);
+        // 2. Verify current password
+        const match = await comparePassword(data.currentPassword, existingUser[0].passwordHash);
         if (!match) {
             throw new AppError("Incorrect current password", 401);
         }
 
-        const hashedPassword = await hashPassword(data.passwordHash);
-
+        // 3. Hash new password & save
+        const hashedPassword = await hashPassword(data.newPassword);
         return this.userRepository.update(id, { passwordHash: hashedPassword });
     }
 
