@@ -16,7 +16,7 @@ app.use('/', AppRoutes.routes());
 // Create HTTP server for both Express API & Socket.IO
 const httpServer = http.createServer(app);
 
-// Initialize Socket.IO connection manager
+// Initialize Socket.IO connection manager (Railway Backend Deployment)
 socketManager.init(httpServer);
 
 // Bootstrap: verify DB is reachable before accepting traffic
