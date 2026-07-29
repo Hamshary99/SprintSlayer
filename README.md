@@ -210,14 +210,17 @@ npm run dev
 
 ### Option B: Docker Compose Setup (Bonus Feature)
 
-Spin up both PostgreSQL and the backend API with a single command:
+Spin up **PostgreSQL**, **Backend API**, and **Frontend Client** all together with a single command:
 
 ```bash
 # From the project root directory:
 docker compose up --build
 ```
 
-The database container will start, run health checks, and the Node.js API will bootstrap on `http://localhost:5000`.
+- **Database (PostgreSQL)**: Health-checked container listening on `localhost:5432`
+- **Backend API (Express 5 + TypeScript)**: Accessible on [`http://localhost:5000`](http://localhost:5000) (Swagger UI: [`http://localhost:5000/api-docs`](http://localhost:5000/api-docs))
+- **Frontend App (React + Nginx)**: Accessible on [`http://localhost:3000`](http://localhost:3000)
+
 
 ---
 
